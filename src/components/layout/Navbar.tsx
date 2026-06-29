@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { ShoppingCart, MapPin } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home", active: true },
@@ -116,65 +117,18 @@ export default function Navbar() {
             <button
               type="button"
               aria-label="Cart"
-              className="transition-colors duration-200"
-              style={{ color: "rgba(255,255,255,0.75)" }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLButtonElement).style.color = "#CD4ECD")
-              }
-              onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.color =
-                "rgba(255,255,255,1)")
-              }
+              className="transition-colors duration-200 text-white hover:text-[#CD4ECD]"
             >
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                />
-              </svg>
+              <ShoppingCart size={22} strokeWidth={1.8} />
             </button>
 
             {/* Location */}
             <button
               type="button"
               aria-label="Location"
-              className="transition-colors duration-200"
-              style={{ color: "rgba(255,255,255,0.75)" }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLButtonElement).style.color = "#CD4ECD")
-              }
-              onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.color =
-                "rgba(255,255,255,1)")
-              }
+              className="transition-colors duration-200 text-white hover:text-[#CD4ECD]"
             >
-              <svg
-                width="22"
-                height="22"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                />
-              </svg>
+              <MapPin size={22} strokeWidth={1.8} />
             </button>
 
             {/* Sign In */}
