@@ -57,8 +57,8 @@ export default function HeroSection() {
 
           {/* ── Sub-headline ── */}
           <p
-            className="text-white/90 text-base sm:text-lg lg:text-xl leading-relaxed mb-10 max-w-2xl mx-auto"
-            style={{ fontFamily: "var(--font-inter), sans-serif" }}
+            className="text-white sm:text-lg lg:text-2xl leading-relaxed mb-10  mx-auto"
+            style={{ fontFamily: "var(--font-jersey-20)" }}
           >
             Play PS5, PS4 &amp; Pool Billiards while enjoying delicious fast food.
           </p>
@@ -86,7 +86,7 @@ export default function HeroSection() {
               style={{
                 "--btn-height": "52px",
                 "--btn-radius": "14px",
-                "--btn-px": "32px",
+                "--btn-px": "40px",
               } as React.CSSProperties}
             >
               <Coffee className="w-5 h-5" style={{ stroke: "url(#btnGrad)" }} />

@@ -3,6 +3,7 @@
 // Navbar and Footer are provided by (main)/layout.tsx.
 
 import HeroSection from "@/components/home/HeroSection";
+import PromotionSlider from "@/components/home/PromotionSlider";
 import FeaturedGames from "@/components/home/FeaturedGames";
 import TopPlayers from "@/components/home/TopPlayers";
 import WhyCafe from "@/components/home/WhyCafe";
@@ -14,6 +15,7 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <PromotionSlider />
       <FeaturedGames />
       <TopPlayers />
       <WhyCafe />
