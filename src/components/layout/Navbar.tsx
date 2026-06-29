@@ -1,25 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
-// --- Navigation Links ---
 const navLinks = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Home", active: true },
   { href: "#about", label: "About" },
-  { href: "#games", label: "Games" },
-  { href: "#tournaments", label: "Tournaments" },
-  { href: "#leaderboard", label: "Leaderboard" },
+  { href: "#services", label: "Services" },
+  { href: "#foods", label: "Foods" },
   { href: "#contact", label: "Contact" },
 ];
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
-  // Add background blur when scrolled
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = (): void => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -28,77 +26,108 @@ export default function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-surface/90 backdrop-blur-xl border-b border-border"
+          ? "bg-[#0a0820]/85 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
           : "bg-transparent"
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-[72px] lg:h-[80px]">
 
-          {/* ---- Logo ---- */}
-          <Link href="/" className="flex items-center gap-3 group">
-            {/* Logo icon — pixel-art-style controller */}
-            <div className="relative w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center group-hover:border-primary transition-all duration-300 group-hover:shadow-[0_0_16px_rgba(124,58,237,0.5)]">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-primary-light"
-              >
-                <path
-                  d="M6 12H10M8 10V14M15 12H15.01M17 11H17.01M7.2 8H16.8C18.8 8 19.8 8 20.55 8.44C21.18 8.82 21.64 9.4 21.87 10.08C22.13 10.85 21.89 11.82 21.42 13.77L21 15.5C20.6 17.12 20.4 17.94 19.9 18.54C19.46 19.07 18.89 19.47 18.25 19.7C17.52 19.96 16.68 19.9 15 19.78L14 19.7C12.9 19.62 12.35 19.58 11.82 19.63C11.36 19.67 10.91 19.78 10.48 19.95C9.99 20.14 9.55 20.45 8.67 21.05L8.3 21.3C7.53 21.82 7.15 22.08 6.81 22.08C6.51 22.08 6.23 21.95 6.04 21.72C5.81 21.45 5.76 21.01 5.66 20.13L5.5 18.72C5.36 17.56 5.29 16.97 5.12 16.45C4.97 15.99 4.76 15.55 4.5 15.15C4.2 14.69 3.79 14.3 2.96 13.51L2.7 13.26C2.27 12.84 2.06 12.63 1.97 12.44C1.88 12.24 1.88 12.02 1.97 11.82C2.06 11.62 2.27 11.41 2.7 10.98L2.96 10.74C3.79 9.95 4.2 9.55 4.5 9.1C4.76 8.7 4.97 8.26 5.12 7.8C5.29 7.27 5.36 6.69 5.5 5.53L5.66 4.12C5.76 3.24 5.81 2.8 6.04 2.53C6.23 2.3 6.51 2.17 6.81 2.17"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+          {/* ── Logo ── */}
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_16px_rgba(124,58,237,0.35)]">
+              <Image
+                src="/logo.png"
+                alt="8bit Cafe Logo"
+                fill
+                sizes="56px"
+                className="object-cover p-0.5"
+              />
             </div>
-            <span
-              className="font-display text-xl font-bold tracking-wider"
-              style={{ fontFamily: "var(--font-orbitron)" }}
-            >
-              <span className="text-white">8bit</span>
-              <span className="text-primary-light"> café</span>
-            </span>
           </Link>
 
-          {/* ---- Desktop Nav Links ---- */}
-          <ul className="hidden lg:flex items-center gap-8">
+          {/* ── Desktop Nav Links ── */}
+          <ul className="hidden lg:flex items-center gap-2">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-text-muted hover:text-white text-sm font-medium transition-colors duration-200 relative group"
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${
+                    link.active
+                      ? "text-fuchsia-400"
+                      : "text-white/80 hover:text-white"
+                  }`}
                 >
                   {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary-light transition-all duration-300 group-hover:w-full" />
                 </Link>
               </li>
             ))}
           </ul>
 
-          {/* ---- Desktop CTA Buttons ---- */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* ── Desktop Right Actions ── */}
+          <div className="hidden lg:flex items-center gap-4">
+            {/* Cart Icon */}
+            <button
+              type="button"
+              className="text-white/70 hover:text-white transition-colors p-1"
+              aria-label="Cart"
+            >
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
+            </button>
+
+            {/* Location Icon */}
+            <button
+              type="button"
+              className="text-white/70 hover:text-white transition-colors p-1"
+              aria-label="Location"
+            >
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                />
+              </svg>
+            </button>
+
+            {/* Sign In Button */}
             <Link
               href="/login"
-              className="px-5 py-2 text-sm font-semibold text-text-secondary border border-border rounded-full hover:border-primary hover:text-white transition-all duration-300"
+              className="px-6 py-2 rounded-full text-sm font-semibold bg-white text-[#1a0a3a] hover:bg-white/90 transition-all duration-200 shadow-[0_2px_12px_rgba(255,255,255,0.2)]"
             >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="btn-primary px-5 py-2 text-sm font-semibold text-white rounded-full"
-            >
-              Sign Up
+              Sign In
             </Link>
           </div>
 
-          {/* ---- Mobile Hamburger ---- */}
+          {/* ── Mobile Hamburger ── */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-border hover:border-primary transition-colors"
+            className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-white/20 hover:border-purple-400/60 transition-colors"
             aria-label="Toggle mobile menu"
           >
             <span
@@ -119,38 +148,33 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* ---- Mobile Menu Dropdown ---- */}
+        {/* ── Mobile Dropdown ── */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden glass-card rounded-2xl mb-4 p-4 border border-border">
-            <ul className="flex flex-col gap-2">
+          <div className="lg:hidden bg-[#0a0820]/95 backdrop-blur-xl rounded-2xl mb-4 p-4 border border-purple-500/20">
+            <ul className="flex flex-col gap-1 mb-4">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-text-muted hover:text-white hover:bg-surface-light rounded-xl text-sm font-medium transition-all duration-200"
+                    className={`block px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                      link.active
+                        ? "text-fuchsia-400 bg-fuchsia-500/10"
+                        : "text-white/80 hover:text-white hover:bg-white/5"
+                    }`}
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-              <Link
-                href="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full text-center px-5 py-2.5 text-sm font-semibold text-text-secondary border border-border rounded-full hover:border-primary hover:text-white transition-all"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="btn-primary w-full text-center px-5 py-2.5 text-sm font-semibold text-white rounded-full"
-              >
-                Sign Up
-              </Link>
-            </div>
+            <Link
+              href="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold bg-white text-[#1a0a3a] hover:bg-white/90 transition-all"
+            >
+              Sign In
+            </Link>
           </div>
         )}
       </nav>
