@@ -68,13 +68,27 @@ html {
 
 /* Brand button gradient */
 .btn-primary {
-  background: linear-gradient(135deg, #6C04D7 0%, #CD4ECD 100%);
-  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #6C04D7 0%, #CD4ECD 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  
+  height: var(--btn-height, 42px);
+  padding: var(--btn-py, 0px) var(--btn-px, 30px);
+  margin: var(--btn-my, 0px) var(--btn-mx, 0px);
+  border-radius: var(--btn-radius, 14px);
+
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 20px rgba(108, 4, 215, 0.4);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #7d15e0 0%, #d660d6 100%);
+  transform: scale(1.03);
   box-shadow: 0 6px 24px rgba(108, 4, 215, 0.5);
-  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: scale(0.97);
 }
 
 /* button secondary */
