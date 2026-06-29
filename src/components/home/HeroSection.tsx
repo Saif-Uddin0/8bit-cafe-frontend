@@ -8,42 +8,41 @@ export default function HeroSection() {
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
       {/* ── Full-bleed Banner Background ── */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-9">
         <Image
-          src="/banner.png"
+          src="/banner-2.png"
           alt="8bit Cafe Banner"
           fill
           priority
-          sizes="100vw"
-          className="object-cover object-center"
+          className="object-cover object-top"
         />
         {/* Subtle dark overlay so text is readable */}
-        <div className="absolute inset-0 bg-[#1a0050]/50" />
+        <div className="absolute inset-0 bg-[#1a0050]/25" />
       </div>
 
       {/* ── Hero Content Card ── */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div
-          className="rounded-3xl px-8 sm:px-14 py-14 sm:py-20 text-center"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            border: "1px solid rgba(255,255,255,0.12)",
-          }}
+          className="rounded-3xl px-8 sm:px-14 py-14 sm:py-20 text-center bg-[#6016B8]/20 backdrop-blur-md border border-white/10
+  "
         >
           {/* ── Headline ── */}
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight mb-4 tracking-wide"
+            className="text-4xl sm:text-5xl lg:text-6xl xl:text-8xl leading-tight mb-4 tracking-wide"
             style={{
               fontFamily: "var(--font-jersey-20)",
               fontWeight: 400,
-              color: "#c026d3",
-              textShadow:
-                "0 0 40px rgba(192,38,211,0.6), 0 0 80px rgba(192,38,211,0.3)",
             }}
           >
-            LEVEL UP YOUR FUN AT 8BIT CAFE
+            <span className="inline-block bg-[linear-gradient(180deg,#CC7FFF_0%,#F6F2ED_20%,#DC6AA5_45%,#DC6AA5_100%)] bg-clip-text text-transparent">
+              LEVEL UP YOUR FUN AT
+            </span>
+
+            <br />
+
+            <span className="inline-block bg-[linear-gradient(180deg,#F5FCED_0%,#33C2E2_100%)] bg-clip-text text-transparent">
+              8BIT CAFE
+            </span>
           </h1>
 
           {/* ── Sub-headline ── */}
@@ -59,9 +58,9 @@ export default function HeroSection() {
             {/* Book Gaming Session */}
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl text-white font-semibold text-sm sm:text-base transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
               style={{
-                background: "linear-gradient(135deg, #6C04D7 0%, #CD4ECD 100%)",
+                background: "linear-gradient(to bottom, #6C04D7 0%, #CD4ECD 100%)",
                 boxShadow: "0 6px 24px rgba(180,40,250,0.4)",
               }}
             >
@@ -86,31 +85,44 @@ export default function HeroSection() {
             {/* Order Food */}
             <Link
               href="#foods"
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-200 hover:bg-white/15 active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 hover:brightness-105 active:scale-[0.98] bg-white"
               style={{
-                background: "rgba(255,255,255,0.12)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                color: "#fff",
-                backdropFilter: "blur(8px)",
+                border: "2px solid transparent",
+                backgroundImage:
+                  "linear-gradient(white, white), linear-gradient(135deg, #6C04D7 0%, #CD4ECD 100%)",
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
               }}
             >
-              {/* Food icon */}
+              {/* Fork icon */}
               <svg
                 width="18"
                 height="18"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="currentColor"
+                stroke="url(#foodGrad)"
                 strokeWidth={1.8}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-                <circle cx="12" cy="12" r="9" />
+                <defs>
+                  <linearGradient id="foodGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#6C04D7" />
+                    <stop offset="100%" stopColor="#CD4ECD" />
+                  </linearGradient>
+                </defs>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 2v20" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
               </svg>
-              Order Food
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #6C04D7 0%, #CD4ECD 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                Order Food
+              </span>
             </Link>
           </div>
         </div>

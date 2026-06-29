@@ -13,64 +13,118 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState<boolean>(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [scrolled, setScrolled] = useState<boolean>(false);
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleScroll = (): void => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = (): void => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#0a0820]/85 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
-          : "bg-transparent"
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[72px] lg:h-[80px]">
+    /* Outer wrapper: flex fixed row, centered */
+    <header className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 lg:px-20 ">
+
+      {/* ── Floating Nav Card ── */}
+      <div
+        className="w-full max-w-[1200px] relative"
+        style={{
+          height: "88px",
+          borderRadius: "20px",
+          background: "rgba(41, 17, 101, 0.4)",
+          backdropFilter: "blur(5px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.09)",
+          boxShadow:
+            "0 8px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(108,4,215,0.15)",
+          transition: "background 0.3s ease, box-shadow 0.3s ease",
+        }}
+      >
+        {/* Inner flex row */}
+        <div className="flex items-center justify-between h-full px-5 sm:px-7">
 
           {/* ── Logo ── */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_16px_rgba(124,58,237,0.35)]">
+          <Link href="/" className="shrink-0 flex items-center">
+            <div
+              className="relative overflow-hidden"
+              style={{
+                width: "70px",
+                height: "70px",
+                borderRadius: "14px",
+              }}
+            >
               <Image
                 src="/logo.png"
                 alt="8bit Cafe Logo"
                 fill
-                sizes="56px"
-                className="object-cover p-0.5"
+                sizes="70px"
+                className="object-cover"
+                priority
               />
             </div>
           </Link>
 
-          {/* ── Desktop Nav Links ── */}
-          <ul className="hidden lg:flex items-center gap-2">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${
-                    link.active
-                      ? "text-fuchsia-400"
-                      : "text-white/80 hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+          {/* ── Desktop Nav Links (centered absolutely) ── */}
+          <ul className="hidden lg:flex items-center gap-0 absolute left-1/2 -translate-x-1/2">
+            {navLinks.map((link) =>
+              link.active ? (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="px-5 py-2 text-sm font-bold block"
+                    style={{
+                      color: "#EF3D86",
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ) : (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="px-5 py-2 text-sm font-medium block transition-all duration-200"
+                    style={{ color: "rgba(255,255,255,1)" }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget;
+                      el.style.background =
+                        "linear-gradient(135deg, #6C04D7 0%, #CD4ECD 100%)";
+                      el.style.WebkitBackgroundClip = "text";
+                      el.style.WebkitTextFillColor = "transparent";
+                      el.style.backgroundClip = "text";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget;
+                      el.style.background = "none";
+                      el.style.WebkitBackgroundClip = "unset";
+                      el.style.WebkitTextFillColor = "rgba(255,255,255,0.80)";
+                      el.style.backgroundClip = "unset";
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              )
+            )}
           </ul>
 
-          {/* ── Desktop Right Actions ── */}
-          <div className="hidden lg:flex items-center gap-4">
-            {/* Cart Icon */}
+          {/* ── Desktop Right: Icons + Sign In ── */}
+          <div className="hidden lg:flex items-center gap-5">
+
+            {/* Cart */}
             <button
               type="button"
-              className="text-white/70 hover:text-white transition-colors p-1"
               aria-label="Cart"
+              className="transition-colors duration-200"
+              style={{ color: "rgba(255,255,255,0.75)" }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.color = "#CD4ECD")
+              }
+              onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.color =
+                "rgba(255,255,255,1)")
+              }
             >
               <svg
                 width="22"
@@ -88,11 +142,19 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Location Icon */}
+            {/* Location */}
             <button
               type="button"
-              className="text-white/70 hover:text-white transition-colors p-1"
               aria-label="Location"
+              className="transition-colors duration-200"
+              style={{ color: "rgba(255,255,255,0.75)" }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.color = "#CD4ECD")
+              }
+              onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.color =
+                "rgba(255,255,255,1)")
+              }
             >
               <svg
                 width="22"
@@ -115,69 +177,90 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Sign In Button */}
+            {/* Sign In */}
             <Link
               href="/login"
-              className="px-6 py-2 rounded-full text-sm font-semibold bg-white text-[#1a0a3a] hover:bg-white/90 transition-all duration-200 shadow-[0_2px_12px_rgba(255,255,255,0.2)]"
+              className="btn-secondary text-sm"
+              style={
+                {
+                  "--btn-height": "42px",
+                  "--btn-radius": "10px",
+                  "--btn-px": "40px",
+                  "--btn-py": "26px",
+                  "--btn-mx": "0px",
+                  "--btn-my": "0px",
+                } as React.CSSProperties
+              }
             >
-              Sign In
+              <span>Sign In</span>
             </Link>
           </div>
 
           {/* ── Mobile Hamburger ── */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-white/20 hover:border-purple-400/60 transition-colors"
-            aria-label="Toggle mobile menu"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/20 hover:border-purple-400/60 transition-colors"
+            aria-label="Toggle menu"
           >
             <span
-              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                isMobileMenuOpen ? "rotate-45 translate-y-2" : ""
-              }`}
+              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${mobileOpen ? "rotate-45 translate-y-2" : ""
+                }`}
             />
             <span
-              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                isMobileMenuOpen ? "opacity-0" : ""
-              }`}
+              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${mobileOpen ? "opacity-0" : ""
+                }`}
             />
             <span
-              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
-              }`}
+              className={`block w-5 h-0.5 bg-white transition-all duration-300 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""
+                }`}
             />
           </button>
         </div>
+      </div>
 
-        {/* ── Mobile Dropdown ── */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-[#0a0820]/95 backdrop-blur-xl rounded-2xl mb-4 p-4 border border-purple-500/20">
-            <ul className="flex flex-col gap-1 mb-4">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`block px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                      link.active
-                        ? "text-fuchsia-400 bg-fuchsia-500/10"
-                        : "text-white/80 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold bg-white text-[#1a0a3a] hover:bg-white/90 transition-all"
-            >
-              Sign In
-            </Link>
-          </div>
-        )}
-      </nav>
+      {/* ── Mobile Dropdown ── */}
+      {mobileOpen && (
+        <div
+          className="absolute top-[96px] left-4 right-4 p-5"
+          style={{
+            borderRadius: "18px",
+            background: "rgba(41, 17, 101, 0.95)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.45)",
+          }}
+        >
+          <ul className="flex flex-col gap-1 mb-4">
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                  style={
+                    link.active
+                      ? {
+                        color: "#EF3D86",
+                      }
+                      : { color: "rgba(255,255,255,0.8)" }
+                  }
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="/login"
+            onClick={() => setMobileOpen(false)}
+            className="btn-secondary w-full text-center py-3 text-sm"
+            style={{ borderRadius: "14px" }}
+          >
+            <span>Sign In</span>
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

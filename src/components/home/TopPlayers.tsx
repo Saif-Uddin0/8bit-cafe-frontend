@@ -229,7 +229,7 @@ export default function TopPlayers() {
         <div className="text-center mt-10">
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-border hover:border-primary text-text-secondary hover:text-white text-sm font-semibold transition-all duration-300"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl border border-border hover:border-primary text-text-secondary hover:text-white text-sm font-semibold transition-all duration-300"
           >
             View Full Leaderboard
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

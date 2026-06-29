@@ -145,7 +145,7 @@ function GameCard({ game }: { game: typeof games[0] }) {
         <StarRating rating={game.rating} />
         <button
           type="button"
-          className="text-xs font-semibold text-primary-light hover:text-white border border-border hover:border-primary px-3 py-1.5 rounded-full transition-all duration-200"
+          className="text-xs font-semibold text-primary-light hover:text-white border border-border hover:border-primary px-3 py-1.5 rounded-xl transition-all duration-200"
         >
           Play Now
         </button>

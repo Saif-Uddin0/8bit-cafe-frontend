@@ -163,7 +163,7 @@ export default function CommunitySection() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="#"
-                className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold text-white"
+                className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-sm font-semibold text-white"
               >
                 {/* Discord icon */}
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@ export default function CommunitySection() {
               </a>
               <a
                 href="#"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-border hover:border-primary text-text-secondary hover:text-white text-sm font-semibold transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-border hover:border-primary text-text-secondary hover:text-white text-sm font-semibold transition-all duration-300"
               >
                 View All Events
               </a>
