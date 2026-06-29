@@ -10,12 +10,14 @@ import WhyCafe from "@/components/home/WhyCafe";
 import TournamentsSection from "@/components/home/TournamentsSection";
 import CommunitySection from "@/components/home/CommunitySection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
+import AboutSection from "@/components/home/AboutSection";
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
       <PromotionSlider />
+      <AboutSection></AboutSection>
       <FeaturedGames />
       <TopPlayers />
       <WhyCafe />
