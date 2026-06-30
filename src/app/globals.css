@@ -218,3 +218,25 @@ html {
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
 }
+
+
+/* cart show smoothly */
+@keyframes cartPopup {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(.96);
+  }
+
+  40% {
+    opacity: .7;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-cartPopup{
+  animation: cartPopup .32s cubic-bezier(.22,1,.36,1);
+}

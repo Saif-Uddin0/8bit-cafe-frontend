@@ -6,7 +6,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+       className="relative h-[600px] md:h-[750px] lg:h-[800px] xl:h-[870px] flex items-center justify-center overflow-hidden"
     >
       {/* SVG Gradient definition for Lucide icons to use */}
       <svg width="0" height="0" className="absolute">
@@ -25,7 +25,7 @@ export default function HeroSection() {
           alt="8bit Cafe Banner"
           fill
           priority
-          className="object-cover object-top"
+          className="object-cover"
         />
         {/* Subtle dark overlay so text is readable */}
         <div className="absolute inset-0 bg-[#1a0050]/25" />
@@ -57,7 +57,7 @@ export default function HeroSection() {
 
           {/* ── Sub-headline ── */}
           <p
-            className="text-white sm:text-lg lg:text-2xl leading-relaxed mb-10  mx-auto"
+            className="text-white sm:text-lg lg:text-2xl  mb-10  mx-auto"
             style={{ fontFamily: "var(--font-jersey-20)" }}
           >
             Play PS5, PS4 &amp; Pool Billiards while enjoying delicious fast food.

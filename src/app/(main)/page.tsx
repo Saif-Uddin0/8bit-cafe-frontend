@@ -12,6 +12,8 @@ import CommunitySection from "@/components/home/CommunitySection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AboutSection from "@/components/home/AboutSection";
 import GameServicesSection from "@/components/home/GameServicesSection";
+import FoodCategories from "@/components/food/FoodCategories";
+import DeliciousFastFood from "@/components/food/DeliciousFastFood";
 
 export default function HomePage() {
   return (
@@ -20,6 +22,8 @@ export default function HomePage() {
       <PromotionSlider />
       <AboutSection></AboutSection>
       <GameServicesSection />
+      <FoodCategories isHomePage={true} />
+      <DeliciousFastFood />
       <FeaturedGames />
       <TopPlayers />
       <WhyCafe />
