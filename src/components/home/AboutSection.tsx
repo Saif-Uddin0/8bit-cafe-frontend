@@ -57,25 +57,14 @@ export default function AboutSection() {
 
                     {/* ================= RIGHT COLLAGE ================= */}
 
-                    <div className="order-1 lg:order-2">
+                    <div className="order-1 lg:order-2 w-full">
 
                         <div
                             className="
                 relative
                 mx-auto
-
-                h-[430px]
-
-                sm:h-[500px]
-
-                md:h-[620px]
-
-                lg:h-[520px]
-
-                xl:h-[620px]
-
                 w-full
-
+                aspect-[650/620]
                 max-w-[650px]
               "
                         >
@@ -86,17 +75,12 @@ export default function AboutSection() {
                   top-0
                   right-0
 
-                  w-[92%]
-                  sm:w-[88%]
-                  lg:w-[90%]
-                  xl:w-[520px]
-
-                  h-[95px]
-                  sm:h-[115px]
-                  md:h-[140px]
+                  w-[80%]
+                  h-[22.5%]
 
                   overflow-hidden
-                  rounded-[18px]
+                  rounded-[12px]
+                  sm:rounded-[18px]
                   md:rounded-[22px]
                 "
                             >
@@ -115,21 +99,14 @@ export default function AboutSection() {
                   absolute
                   right-0
 
-                  top-[110px]
-                  sm:top-[130px]
-                  md:top-[160px]
+                  top-[25.8%]
 
-                  w-[92%]
-                  sm:w-[88%]
-                  lg:w-[90%]
-                  xl:w-[520px]
-
-                  h-[210px]
-                  sm:h-[260px]
-                  md:h-[330px]
+                  w-[80%]
+                  h-[53.2%]
 
                   overflow-hidden
-                  rounded-[18px]
+                  rounded-[12px]
+                  sm:rounded-[18px]
                   md:rounded-[22px]
                 "
                             >
@@ -147,29 +124,15 @@ export default function AboutSection() {
                   absolute
                   z-20
 
-                  left-2
-                  sm:left-8
-                  md:left-16
-                  lg:left-8
-                  xl:left-20
+                  left-[12.3%]
+                  top-[50.8%]
 
-                  top-[210px]
-                  sm:top-[250px]
-                  md:top-[310px]
-                  lg:top-[260px]
-                  xl:top-[315px]
-
-                  h-[130px]
-                  w-[130px]
-
-                  sm:h-[170px]
-                  sm:w-[170px]
-
-                  md:h-[210px]
-                  md:w-[210px]
+                  w-[32.3%]
+                  h-[33.9%]
 
                   overflow-hidden
-                  rounded-[18px]
+                  rounded-[12px]
+                  sm:rounded-[18px]
                   md:rounded-[22px]
 
                   border
@@ -193,17 +156,9 @@ export default function AboutSection() {
                   z-30
 
                   right-0
-                                
-                  bottom-0
-                  sm:bottom-2
-                  md:bottom-8
-                  xl:bottom-12
+                  bottom-[7.7%]
 
-                  w-[220px]
-                  sm:w-[270px]
-                  md:w-[320px]
-                  lg:w-[340px]
-                  xl:w-[360px]
+                  w-[55.4%]
                 "
                             >
                                 <Image
