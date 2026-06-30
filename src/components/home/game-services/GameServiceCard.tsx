@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Gamepad2 } from "lucide-react";
-import type { GameService } from "@/components/game-services/gameServicesData";
+import type { GameService } from "@/components/home/game-services/gameServicesData";
 
 interface GameServiceCardProps {
   service: GameService;

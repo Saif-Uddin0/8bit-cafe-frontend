@@ -57,7 +57,7 @@ export default function AboutSection() {
 
                     {/* ================= RIGHT COLLAGE ================= */}
 
-                    <div className="order-1 lg:order-2 w-full">
+                    <div className="order-1 lg:order-2 w-full flex justify-center items-center">
 
                         <div
                             className="

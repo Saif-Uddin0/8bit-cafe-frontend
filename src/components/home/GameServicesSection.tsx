@@ -4,14 +4,14 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { ArrowBigLeft, ArrowBigRight} from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 
 import "swiper/css";
 
-import GameServiceCard from "@/components/game-services/GameServiceCard";
-import BookingModal, { type BookingFormData } from "@/components/game-services/BookingModal";
-import BookingSummaryModal from "@/components/game-services/BookingSummaryModal";
-import { SERVICES } from "@/components/game-services/gameServicesData";
+import GameServiceCard from "@/components/home/game-services/GameServiceCard";
+import BookingModal, { type BookingFormData } from "@/components/home/game-services/BookingModal";
+import BookingSummaryModal from "@/components/home/game-services/BookingSummaryModal";
+import { SERVICES } from "@/components/home/game-services/gameServicesData";
 
 const ARROW_BTN =
   "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full " +
@@ -101,7 +101,7 @@ export default function GameServicesSection() {
         <div className="flex items-center justify-between gap-4 mb-10 sm:mb-14 py-3">
           {/* Prev arrow */}
           <button ref={prevRef} aria-label="Previous slide" className={ARROW_BTN}>
-            <ArrowBigLeft  size={18} />
+            <ArrowBigLeft size={18} />
           </button>
 
           {/* Title block */}

@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { X, Gamepad2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
-import { SERVICES, TIME_SLOTS, type GameService } from "@/components/game-services/gameServicesData";
+import { SERVICES, TIME_SLOTS, type GameService } from "@/components/home/game-services/gameServicesData";
 
 // ─── Mini Calendar ─────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 function CustomCalendar({
@@ -21,9 +21,9 @@ function CustomCalendar({
   onSelect: (d: Date) => void;
 }) {
   const [current, setCurrent] = useState(new Date());
-  const year  = current.getFullYear();
+  const year = current.getFullYear();
   const month = current.getMonth();
-  const daysInMonth   = new Date(year, month + 1, 0).getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayIndex = new Date(year, month, 1).getDay();
 
   const prevMonth = () => {
@@ -66,14 +66,14 @@ function CustomCalendar({
         </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-white/30 mb-2">
-        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d) => <span key={d}>{d}</span>)}
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => <span key={d}>{d}</span>)}
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
         {cells.map((date, i) => {
           if (!date) return <div key={`p-${i}`} />;
           const disabled = !isFuture(date);
-          const sel      = isSel(date);
-          const today    = isToday(date);
+          const sel = isSel(date);
+          const today = isToday(date);
           return (
             <button
               key={`d-${date.getDate()}`}
@@ -152,17 +152,17 @@ export default function BookingModal({
   const { register, handleSubmit, watch, setValue } = useForm<FormFields>({
     defaultValues: {
       serviceId: String(initial.id),
-      duration:  initial.duration,
+      duration: initial.duration,
       firstName: "",
-      lastName:  "",
-      email:     "",
-      phone:     "",
+      lastName: "",
+      email: "",
+      phone: "",
     },
   });
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [timeSlot,     setTimeSlot]     = useState("10:00 Am");
-  const [consent,      setConsent]      = useState(false);
+  const [timeSlot, setTimeSlot] = useState("10:00 Am");
+  const [consent, setConsent] = useState(false);
 
   const watchedServiceId = watch("serviceId");
 
@@ -191,12 +191,12 @@ export default function BookingModal({
     const service = SERVICES.find((s) => s.id === Number(fields.serviceId)) ?? SERVICES[0];
     onConfirm({
       service,
-      duration:  fields.duration,
+      duration: fields.duration,
       firstName: fields.firstName,
-      lastName:  fields.lastName,
-      email:     fields.email,
-      phone:     fields.phone,
-      date:      selectedDate,
+      lastName: fields.lastName,
+      email: fields.email,
+      phone: fields.phone,
+      date: selectedDate,
       timeSlot,
     });
   };

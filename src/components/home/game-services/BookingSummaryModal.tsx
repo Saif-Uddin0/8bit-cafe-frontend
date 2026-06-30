@@ -4,8 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { X, Gamepad2, Check } from "lucide-react";
 import { toast } from "react-toastify";
-import { SERVICE_FEE } from "@/components/game-services/gameServicesData";
-import type { BookingFormData } from "@/components/game-services/BookingModal";
+import { SERVICE_FEE } from "@/components/home/game-services/gameServicesData";
+import type { BookingFormData } from "@/components/home/game-services/BookingModal";
 
 interface BookingSummaryModalProps {
   isOpen: boolean;
@@ -15,14 +15,14 @@ interface BookingSummaryModalProps {
 }
 
 const PAYMENT_METHODS = [
-  { id: "Bkash",          label: "Bkash",           emoji: "📱" },
-  { id: "Nogod",          label: "Nagad",            emoji: "⚡" },
+  { id: "Bkash", label: "Bkash", emoji: "📱" },
+  { id: "Nogod", label: "Nagad", emoji: "⚡" },
   { id: "CashOnDelivery", label: "Cash On delivery", emoji: "💵" },
 ];
 
 function formatDate(date: Date): string {
-  const dd   = String(date.getDate()).padStart(2, "0");
-  const mm   = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
   const yyyy = date.getFullYear();
   return `${dd}-${mm}-${yyyy}`;
 }
@@ -43,8 +43,8 @@ export default function BookingSummaryModal({
   if (!isOpen || !data) return null;
 
   const { service, duration, firstName, lastName, email, phone, date, timeSlot } = data;
-  const subtotal  = service.price;
-  const total     = subtotal + SERVICE_FEE;
+  const subtotal = service.price;
+  const total = subtotal + SERVICE_FEE;
 
   const handlePay = () => {
     onPaid();
