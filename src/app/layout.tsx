@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Orbitron, Jersey_20 } from "next/font/google";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 // --- Body font: Inter (clean, modern, readable) ---
@@ -47,6 +49,17 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${orbitron.variable} ${jersey20.variable}`}>
       <body className="min-h-screen bg-background text-text-primary antialiased">
         {children}
+        <ToastContainer
+          position="top-right"
+          autoClose={4500}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="dark"
+          toastStyle={{ background: "#12091F", border: "1px solid rgba(108,4,215,0.4)", borderRadius: "16px" }}
+        />
       </body>
     </html>
   );

@@ -11,6 +11,7 @@ import TournamentsSection from "@/components/home/TournamentsSection";
 import CommunitySection from "@/components/home/CommunitySection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AboutSection from "@/components/home/AboutSection";
+import GameServicesSection from "@/components/home/GameServicesSection";
 
 export default function HomePage() {
   return (
@@ -18,6 +19,7 @@ export default function HomePage() {
       <HeroSection />
       <PromotionSlider />
       <AboutSection></AboutSection>
+      <GameServicesSection />
       <FeaturedGames />
       <TopPlayers />
       <WhyCafe />

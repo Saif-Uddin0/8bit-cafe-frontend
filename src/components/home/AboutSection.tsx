@@ -89,6 +89,7 @@ export default function AboutSection() {
                                     alt="Banner"
                                     fill
                                     priority
+                                    sizes="(max-width: 640px) 80vw, (max-width: 1024px) 65vw, 520px"
                                     className="object-cover"
                                 />
                             </div>
@@ -114,6 +115,7 @@ export default function AboutSection() {
                                     src="/Subtract.png"
                                     alt="Gaming Area"
                                     fill
+                                    sizes="(max-width: 640px) 80vw, (max-width: 1024px) 65vw, 520px"
                                     className="object-cover"
                                 />
                             </div>
@@ -145,6 +147,7 @@ export default function AboutSection() {
                                     src="/Rectangle 90.png"
                                     alt="Cafe"
                                     fill
+                                    sizes="(max-width: 640px) 32vw, (max-width: 1024px) 25vw, 210px"
                                     className="object-cover"
                                 />
                             </div>
