@@ -51,30 +51,37 @@ export default function CartDrawer() {
 
   return (
     <div className="fixed inset-0 z-[999]">
-  {/* Backdrop */}
-  <div
-    onClick={() => toggleCart(false)}
-    className="absolute inset-0 bg-black/10"
-  />
+      {/* Backdrop */}
+      <div
+        onClick={() => toggleCart(false)}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      />
 
-  {/* Cart Popup */}
-  <div
-  ref={drawerRef}
-  className="
-    absolute
-    top-[96px]
-    right-[180px]
-    w-[390px]
-    rounded-[22px]
-    bg-white
-    border
-    border-gray-200
-    shadow-[0_35px_80px_rgba(0,0,0,.22)]
-    overflow-hidden
-    origin-top-right
-    animate-cartPopup
-  "
->
+      {/* Cart Panel — bottom sheet on mobile, popup on desktop */}
+      <div
+        ref={drawerRef}
+        className="
+          absolute
+          /* ── Mobile: full-width bottom sheet ── */
+          bottom-0 left-0 right-0
+          rounded-t-[28px]
+          max-h-[90dvh]
+          /* ── sm+: floating popup near cart icon ── */
+          sm:bottom-auto sm:top-[88px]
+          sm:left-auto sm:right-4
+          sm:w-[390px]
+          sm:max-h-none
+          sm:rounded-[22px]
+          /* ── shared ── */
+          bg-white
+          border border-gray-200
+          shadow-[0_35px_80px_rgba(0,0,0,.28)]
+          overflow-hidden
+          origin-bottom sm:origin-top-right
+          animate-cartPopup
+        "
+      >
+
         {/* Header */}
  
         <div className="flex items-center justify-between px-4 pt-5 pb-4">
@@ -92,7 +99,7 @@ export default function CartDrawer() {
 
         {/* Body */}
 
-        <div className="max-h-[430px] overflow-y-auto px-6">
+        <div className="max-h-[45dvh] sm:max-h-[430px] overflow-y-auto px-6">
 
           {items.length === 0 ? (
             <div className="py-16 flex flex-col items-center">

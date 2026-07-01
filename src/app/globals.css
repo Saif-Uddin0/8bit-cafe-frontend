@@ -265,8 +265,26 @@ html {
   }
 }
 
+@keyframes cartSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-cartPopup {
-  animation: cartPopup .32s cubic-bezier(.22, 1, .36, 1);
+  animation: cartSlideUp .32s cubic-bezier(.22, 1, .36, 1);
+}
+
+@media (min-width: 640px) {
+  .animate-cartPopup {
+    animation: cartPopup .32s cubic-bezier(.22, 1, .36, 1);
+  }
 }
 
 /* gradiant button text style */

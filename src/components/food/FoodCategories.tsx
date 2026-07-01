@@ -68,17 +68,21 @@ export default function FoodCategories({
 
         {/* ── Gradient pill container ── */}
         <div
-          className="w-full rounded-[28px] px-6 sm:px-10 py-7 sm:py-8"
+          className="w-full rounded-[32px] px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-11"
           style={{
             background: "linear-gradient(135deg, #7B12E0 0%, #A530D8 45%, #CD4ECD 100%)",
           }}
         >
+          {/* Scrollable row — centers when items fit, scrolls when they overflow */}
           <div
             className="
-              flex items-center justify-start sm:justify-center
-              gap-6 sm:gap-8 md:gap-10 lg:gap-14
-              overflow-x-auto pb-1
-              scrollbar-none
+              flex items-center justify-center
+              gap-4 sm:gap-6 lg:gap-8 xl:gap-10
+              overflow-x-auto
+              px-2
+              pb-1
+              [scrollbar-width:none]
+              [&::-webkit-scrollbar]:hidden
             "
           >
             {/* "All Items" option — Foods page only */}
@@ -90,14 +94,20 @@ export default function FoodCategories({
               >
                 <div
                   className={`
-                    flex h-[100px] w-[100px] sm:h-[110px] sm:w-[110px] items-center justify-center
-                    rounded-full border-[3px] bg-white/15 transition-all duration-300
+                    relative h-[100px] w-[100px] sm:h-[110px] sm:w-[110px] rounded-full overflow-hidden
+                    border-[3px] transition-all duration-300
                     ${activeCategory === "All"
                       ? "border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                      : "border-white/30 group-hover/cat:border-white group-hover/cat:scale-105"}
+                      : "border-white/30 group-hover/cat:border-white group-hover/cat:scale-105 group-hover/cat:shadow-[0_0_16px_rgba(255,255,255,0.2)]"}
                   `}
                 >
-                  <span className="text-base font-bold uppercase tracking-widest text-white">All</span>
+                  <Image
+                    src="/all-cat.png"
+                    alt="All Items"
+                    fill
+                    sizes="120px"
+                    className="object-cover object-center transition-transform duration-500 group-hover/cat:scale-105"
+                  />
                 </div>
                 <span className="text-center text-xs sm:text-sm font-semibold text-white">
                   All Items
@@ -117,9 +127,10 @@ export default function FoodCategories({
                 >
                   <div
                     className={`
-                      relative h-[78px] w-[78px] sm:h-[85px] sm:w-[85px] rounded-full overflow-hidden bg-white/10 flex items-center justify-center
+                      relative h-[92px] w-[92px] sm:h-[96px] sm:w-[96px] rounded-full overflow-hidden bg-white/10
+                      border-[3px] transition-all duration-300
                       ${isSelected
-                        ? "border-white scale-102 shadow-[0_0_20px_rgba(255,255,255,0.35)]"
+                        ? "border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.35)]"
                         : "border-white/25 group-hover/cat:border-white group-hover/cat:scale-105 group-hover/cat:shadow-[0_0_16px_rgba(255,255,255,0.2)]"}
                     `}
                   >
@@ -128,7 +139,7 @@ export default function FoodCategories({
                       alt={cat.name}
                       fill
                       sizes="120px"
-                      className="object-cover object-center transition-transform duration-500 group-hover/cat:scale-102"
+                      className="object-cover object-center transition-transform duration-500 group-hover/cat:scale-105"
                     />
                   </div>
                   <span
