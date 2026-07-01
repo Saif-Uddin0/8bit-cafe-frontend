@@ -56,7 +56,7 @@ export default function ChooseUs() {
               text-4xl
               sm:text-5xl
               lg:text-6xl
-              bg-gradient-to-b
+              bg-gradient-to-l
               from-[#6C04D7]
               to-[#CD4ECD]
               bg-clip-text
@@ -72,7 +72,7 @@ export default function ChooseUs() {
         </div>
 
         {/* Desktop */}
-        <div className="hidden lg:flex flex-col gap-24 xl:gap-32">
+        <div className="hidden lg:flex flex-col gap-18">
           {features.map((feature, index) => (
             <div
               key={feature.id}
