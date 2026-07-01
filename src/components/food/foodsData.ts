@@ -87,7 +87,7 @@ export const FOOD_ITEMS: FoodItem[] = [
     id: 4,
     name: "Matcha Ice Cream",
     price: 15,
-    image: "https://images.unsplash.com/photo-1505394033221-400e62143763?w=500&auto=format&fit=crop&q=80",
+    image: "https://i.postimg.cc/pXk6FqTB/images-(1).jpg",
     category: "Dessert",
     rating: 4.9,
     reviewsCount: 145,
