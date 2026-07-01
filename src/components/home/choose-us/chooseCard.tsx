@@ -1,12 +1,11 @@
 import Image from "next/image";
 
-interface ChooseCardProps {
+interface Props {
   title: string;
   description: string;
   imageSrc: string;
   imageAlt: string;
   imageOnRight: boolean;
-  index: number;
 }
 
 export default function ChooseCard({
@@ -15,62 +14,128 @@ export default function ChooseCard({
   imageSrc,
   imageAlt,
   imageOnRight,
-}: ChooseCardProps) {
+}: Props) {
   return (
     <div
-      className={`flex items-center gap-0 w-full ${
-        imageOnRight ? "flex-row" : "flex-row-reverse"
-      }`}
+      className={`
+      relative
+      flex
+      items-center
+      ${
+        imageOnRight
+          ? "justify-start"
+          : "justify-end"
+      }
+    `}
     >
-      {/* Text pill */}
       <div
-        className={`flex-1 flex ${
-          imageOnRight ? "justify-start pr-6" : "justify-end pl-6"
-        }`}
+        className={`
+        flex
+        items-center
+        ${
+          imageOnRight
+            ? ""
+            : "flex-row-reverse"
+        }
+      `}
       >
+        {/* IMAGE */}
+
         <div
-          className="relative px-6 py-4 rounded-full max-w-[260px]"
-          style={{
-            background: "rgba(14, 10, 36, 0.75)",
-            border: "1px solid rgba(108,4,215,0.30)",
-            boxShadow: "0 0 24px rgba(108,4,215,0.15), inset 0 1px 0 rgba(255,255,255,0.04)",
-            backdropFilter: "blur(16px)",
-          }}
+          className="
+          relative
+          z-20
+          h-[170px]
+          w-[170px]
+          rounded-full
+          shrink-0
+        "
         >
-          {/* Left accent bar */}
-          <span
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
-            style={{ background: "linear-gradient(180deg,#6C04D7,#CD4ECD)" }}
+          {/* Glow */}
+
+          <div
+            className="
+            absolute
+            inset-0
+            rounded-full
+          "
+            style={{
+              boxShadow:
+                "0 0 40px rgba(205,78,205,.45)",
+            }}
           />
-          <h3 className="text-white font-bold text-sm sm:text-base leading-tight mb-1">
+
+          {/* Ring */}
+
+          <div
+            className="
+            absolute
+            inset-0
+            rounded-full
+            border-[4px]
+            border-[#CD4ECD]
+          "
+          />
+
+          <div
+            className="
+            absolute
+            inset-[6px]
+            rounded-full
+            overflow-hidden
+          "
+          >
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* TEXT */}
+
+        <div
+          className={`
+          relative
+          z-10
+          w-[285px]
+          rounded-full
+          border
+          border-[#5D199E]
+          bg-[#140C28]
+          px-8
+          py-6
+          ${
+            imageOnRight
+              ? "-ml-7"
+              : "-mr-7"
+          }
+        `}
+        >
+          <span
+            className="
+            absolute
+            left-0
+            top-1/2
+            h-10
+            w-[5px]
+            -translate-y-1/2
+            rounded-r-full
+            bg-gradient-to-b
+            from-[#F862C9]
+            to-[#873CE2]
+          "
+          />
+
+          <h3 className="text-white font-bold text-[21px]">
             {title}
           </h3>
-          <p className="text-text-muted text-xs leading-relaxed">{description}</p>
-        </div>
-      </div>
 
-      {/* Circle image */}
-      <div className="flex-shrink-0 relative" style={{ width: 160, height: 160 }}>
-        {/* Glow ring */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            boxShadow: "0 0 32px rgba(108,4,215,0.55), 0 0 64px rgba(108,4,215,0.20)",
-            border: "2px solid rgba(108,4,215,0.5)",
-            borderRadius: "50%",
-          }}
-        />
-        <div
-          className="w-full h-full rounded-full overflow-hidden relative"
-          style={{ border: "3px solid rgba(108,4,215,0.4)" }}
-        >
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            fill
-            sizes="160px"
-            className="object-cover"
-          />
+          <p className="mt-2 text-sm text-white/60 leading-6">
+            {description}
+          </p>
         </div>
       </div>
     </div>
