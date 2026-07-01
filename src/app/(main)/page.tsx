@@ -4,12 +4,8 @@
 
 import HeroSection from "@/components/home/HeroSection";
 import PromotionSlider from "@/components/home/PromotionSlider";
-import FeaturedGames from "@/components/home/FeaturedGames";
-import TopPlayers from "@/components/home/TopPlayers";
-import WhyCafe from "@/components/home/WhyCafe";
-import TournamentsSection from "@/components/home/TournamentsSection";
-import CommunitySection from "@/components/home/CommunitySection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
+import ChooseUs from "@/components/home/ChooseUs";
+import Review from "@/components/home/Review";
 import AboutSection from "@/components/home/AboutSection";
 import GameServicesSection from "@/components/home/GameServicesSection";
 import FoodCategories from "@/components/food/FoodCategories";
@@ -24,12 +20,10 @@ export default function HomePage() {
       <GameServicesSection />
       <FoodCategories isHomePage={true} />
       <DeliciousFastFood />
-      <FeaturedGames />
-      <TopPlayers />
-      <WhyCafe />
-      <TournamentsSection />
-      <CommunitySection />
-      <TestimonialsSection />
+      <ChooseUs />
+      <Review />
+      
     </>
   );
 }
+
