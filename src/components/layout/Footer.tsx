@@ -10,7 +10,7 @@ export default function Footer() {
       }}
     >
       {/* Top section */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-8 lg:py-10">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 pt-8 lg:py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 items-start">
           
           {/* Logo container */}
