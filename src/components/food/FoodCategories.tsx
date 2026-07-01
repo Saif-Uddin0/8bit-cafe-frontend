@@ -45,7 +45,7 @@ export default function FoodCategories({
         {/* ── Section header ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8 sm:mb-10">
           <h2
-            className="text-4xl sm:text-5xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
+            className="text-4xl sm:text-5xl bg-gradient-to-b from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
             style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
           >
             Food Categories
@@ -117,11 +117,9 @@ export default function FoodCategories({
                 >
                   <div
                     className={`
-                      relative h-[100px] w-[100px] sm:h-[110px] sm:w-[110px]
-                      overflow-hidden rounded-full border-[3px] bg-black/25
-                      transition-all duration-300
+                      relative h-[78px] w-[78px] sm:h-[85px] sm:w-[85px] rounded-full overflow-hidden bg-white/10 flex items-center justify-center
                       ${isSelected
-                        ? "border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.35)]"
+                        ? "border-white scale-102 shadow-[0_0_20px_rgba(255,255,255,0.35)]"
                         : "border-white/25 group-hover/cat:border-white group-hover/cat:scale-105 group-hover/cat:shadow-[0_0_16px_rgba(255,255,255,0.2)]"}
                     `}
                   >
@@ -129,8 +127,8 @@ export default function FoodCategories({
                       src={cat.image}
                       alt={cat.name}
                       fill
-                      sizes="110px"
-                      className="object-cover transition-transform duration-500 group-hover/cat:scale-110"
+                      sizes="120px"
+                      className="object-cover object-center transition-transform duration-500 group-hover/cat:scale-102"
                     />
                   </div>
                   <span

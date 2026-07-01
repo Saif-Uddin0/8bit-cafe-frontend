@@ -34,8 +34,8 @@ export default function FoodCard({ item }: FoodCardProps) {
       <div
         className="
           relative flex flex-col items-center w-full h-full
-          rounded-[24px] border border-[#6C04D7]/40
-          bg-[#12091F]
+          rounded-[24px] border border-[#F862C9]/90
+          bg-[#7E00FF33]
           pt-10 pb-5 px-5
           transition-all duration-300
           hover:border-[#6C04D7] hover:shadow-[0_0_32px_rgba(108,4,215,0.35)]
@@ -63,35 +63,36 @@ export default function FoodCard({ item }: FoodCardProps) {
         {/* Name */}
         <h4
           className="text-base sm:text-lg text-white text-center font-bold mb-3 leading-tight"
-          style={{ fontFamily: "var(--font-orbitron)" }}
+          style={{ fontFamily: "var(--font-Roboto)" }}
         >
           {item.name}
         </h4>
 
-        {/* Rating */}
-        <div className="flex items-center justify-center gap-1.5 mb-2">
-          <Star size={13} className="text-[#CD4ECD] fill-[#CD4ECD]" />
-          <span className="text-xs text-[#CD4ECD] font-semibold">
-            {item.rating}({item.reviewsCount})
-          </span>
-        </div>
+
 
         {/* Delivery info rows */}
-        <div className="flex flex-col items-start gap-1.5 w-full mb-5 text-[11px] sm:text-xs text-white/50">
-          <div className="flex items-center gap-1.5">
-            <Clock size={11} className="text-white/35 flex-shrink-0" />
+        <div className="flex flex-col items-start gap-1.5 w-full mb-5 text-sm text-white/50">
+          {/* Rating */}
+          <div className="flex items-center justify-center gap-1.5">
+            <Star size={13} className="text-yellow-400 " />
+            <span className="text-sm text-white">
+              {item.rating}({item.reviewsCount})
+            </span>
+          </div>
+          <div className="flex items-center text-sm gap-1.5">
+            <Clock size={13} className="text-white flex-shrink-0" />
             <span>{item.deliveryTime} min</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Truck size={11} className="text-white/35 flex-shrink-0" />
+          <div className="flex text-sm items-center gap-1.5">
+            <Truck size={13} className="text-white flex-shrink-0" />
             <span>Delivery charge {item.deliveryFee} Tk</span>
           </div>
         </div>
 
         {/* Price */}
         <div
-          className="text-[#EF3D86] text-xl sm:text-2xl font-bold mb-4 tracking-wide"
-          style={{ fontFamily: "var(--font-jersey-20)" }}
+          className="text-[#FF5EA0] text-lg sm:text-xl font-semibold mb-4 tracking-wide"
+          style={{ fontFamily: "var(--font-Roboto)" }}
         >
           ${item.price}.00
         </div>
@@ -102,15 +103,32 @@ export default function FoodCard({ item }: FoodCardProps) {
           onClick={handleOrder}
           className="
             w-full flex items-center justify-center gap-2
-            bg-white/95 text-[#12091F]
-            text-xs sm:text-sm font-bold uppercase tracking-widest
-            py-2.5 px-4 rounded-xl
+            bg-[#F6F2ED] 
+            py-2.5 px-4 rounded-md
             hover:bg-white hover:shadow-[0_0_20px_rgba(205,78,205,0.45)]
             active:scale-95 transition-all duration-200
           "
         >
-          <ShoppingCart size={14} strokeWidth={2.5} />
-          <span>Order</span>
+          <Image
+            src="/order-btn-icon.png"
+            alt="Order"
+            width={26}
+            height={26}
+            className="object-contain"
+          />
+          <span
+            className="
+      bg-gradient-to-b
+      from-[#6C04D7]
+      to-[#CD4ECD]
+      bg-clip-text
+      text-transparent
+      font-semibold
+    "
+            style={{
+              fontFamily: "var(--font-Jersey-20)",
+            }}
+          >Order</span>
         </button>
       </div>
     </div>
