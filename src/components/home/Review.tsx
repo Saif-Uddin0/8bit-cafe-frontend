@@ -51,28 +51,18 @@ export default function Review() {
   return (
     <section
       id="reviews"
-      className="relative overflow-hidden py-20 lg:py-28 bg-[#090414]"
+      className="relative overflow-hidden bg-[#0A061A] py-16 sm:py-20 lg:py-28"
     >
-      {/* Glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6C04D7]/10 blur-[180px]" />
       </div>
 
       <div className="relative">
+
         {/* Heading */}
-        <div className="mb-16 text-center">
+        <div className="mb-42 sm:mb-56 md:mb-70 lg:mb-80 text-center">
           <h2
-            className="
-              inline-block
-              text-4xl
-              sm:text-5xl
-              lg:text-6xl
-              bg-gradient-to-l
-              from-[#6C04D7]
-              to-[#CD4ECD]
-              bg-clip-text
-              text-transparent
-            "
+            className="inline-block text-4xl sm:text-5xl lg:text-6xl bg-gradient-to-l from-[#6C04D7] to-[#CD4ECD] bg-clip-text text-transparent"
             style={{
               fontFamily: "var(--font-jersey-20)",
             }}
@@ -82,8 +72,8 @@ export default function Review() {
         </div>
 
         {/* Slider */}
-        <div className="overflow-hidden">
-          <div className="marquee flex gap-8 w-max">
+        <div className="overflow-visible  px-4 sm:px-6 lg:px-0">
+          <div className="marquee flex w-max gap-5 sm:gap-6 md:gap-8 lg:gap-10">
             {reviews.map((review, index) => (
               <ReviewCard
                 key={`${review.id}-${index}`}
@@ -92,8 +82,8 @@ export default function Review() {
             ))}
           </div>
         </div>
-      </div>
 
+      </div>
     </section>
   );
 }

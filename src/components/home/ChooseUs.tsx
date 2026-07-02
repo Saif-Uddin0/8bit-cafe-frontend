@@ -39,11 +39,11 @@ export default function ChooseUs() {
   return (
     <section
       id="why-choose-us"
-      className="relative overflow-hidden py-10 lg:py-22"
+      className="relative overflow-hidden py-10 lg:py-22 bg-[#0A061A]"
     >
       {/* Background Glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-1/2 top-1/2 h-[750px] w-[750px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6C04D7]/10 blur-[180px]" />
+        <div className="absolute left-1/2 top-1/2 h-[750px] w-[750px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0A061A] blur-[180px]" />
       </div>
 
       <div className="relative mx-auto max-w-[1500px] px-5 lg:px-10 xl:px-16">

@@ -300,12 +300,19 @@ html {
 
 /* ── Review marquee ticker ── */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .marquee {
-  animation: marquee 25s linear infinite;
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
 }
 
 .marquee:hover {

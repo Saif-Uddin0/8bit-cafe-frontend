@@ -22,7 +22,6 @@ export default function HomePage() {
       <DeliciousFastFood />
       <ChooseUs />
       <Review />
-      
     </>
   );
 }

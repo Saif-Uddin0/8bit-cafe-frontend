@@ -62,15 +62,14 @@ export default function ChooseCard({
           lg:max-w-none
           lg:w-[520px]
           xl:w-[580px]
-          rounded-[40px]
           px-7
           lg:px-12
           py-7
           lg:py-10
           ${
             imageOnRight
-              ? "lg:ml-10 xl:ml-14"
-              : "lg:mr-10 xl:mr-14"
+              ? "lg:ml-10 xl:ml-14 rounded-tl-full rounded-tr-full rounded-br-full rounded-bl-none"
+              : "lg:mr-10 xl:mr-14 rounded-tl-full rounded-tr-full rounded-bl-full rounded-br-none"
           }`}
         style={{
           background: "#29116533",
