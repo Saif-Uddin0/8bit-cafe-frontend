@@ -12,16 +12,14 @@ export interface ReviewData {
 
 function StarRating({ count }: { count: number }) {
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1 mt-2">
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          width="14"
-          height="14"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
-          fill={i < count ? "#F59E0B" : "rgba(245,158,11,0.2)"}
-          stroke={i < count ? "#F59E0B" : "rgba(245,158,11,0.3)"}
-          strokeWidth={2}
+          fill={i < count ? "#FFC107" : "#4B3B62"}
         >
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
@@ -30,51 +28,60 @@ function StarRating({ count }: { count: number }) {
   );
 }
 
-export default function ReviewCard({ review }: { review: ReviewData }) {
+export default function ReviewCard({
+  review,
+}: {
+  review: ReviewData;
+}) {
   return (
     <div
-      className="flex-shrink-0 w-[220px] sm:w-[240px] rounded-2xl overflow-hidden relative"
+      className="relative flex-shrink-0 w-[285px] rounded-[20px] overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, rgba(22,10,56,0.95) 0%, rgba(14,8,36,0.98) 100%)",
-        border: "1px solid rgba(108,4,215,0.30)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+        background:
+          "linear-gradient(180deg,#6B2E8F 0%,#5A257A 100%)",
       }}
     >
-      {/* Card image */}
-      <div className="relative w-full h-[160px] overflow-hidden">
+      {/* Image */}
+      <div className="relative h-[205px] w-full">
         <Image
           src={review.imageSrc}
           alt={review.imageAlt}
           fill
-          sizes="240px"
           className="object-cover"
         />
-        {/* Gradient overlay at bottom of image */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 40%, rgba(14,8,36,0.95) 100%)",
-          }}
-        />
-        {/* "Chill Zone" badge overlay */}
-        <div
-          className="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide"
-          style={{
-            background: "linear-gradient(135deg,#6C04D7,#CD4ECD)",
-            color: "#fff",
-          }}
-        >
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#5A257A] via-transparent to-transparent" />
+
+        <div className="absolute top-3 right-3 bg-[#C53EFF] text-white text-[11px] font-semibold px-3 py-1 rounded-md">
           Chill Zone
         </div>
       </div>
 
-      {/* Card body */}
-      <div className="px-4 py-3">
-        <p className="text-white font-bold text-sm leading-tight">{review.name}</p>
-        <p className="text-text-muted text-[11px] mb-1.5">{review.role}</p>
+      {/* Floating Avatar */}
+      <div className="absolute left-5 top-[165px] z-20">
+        <div className="relative h-[64px] w-[64px] rounded-full overflow-hidden border-[4px] border-[#5A257A]">
+          <Image
+            src={review.imageSrc}
+            alt={review.imageAlt}
+            fill
+            className="object-cover"
+          />
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="pt-10 pb-5 px-5">
+        <h3 className="text-white text-[18px] font-semibold">
+          {review.name}
+        </h3>
+
+        <p className="text-white/70 text-[13px] mt-1">
+          {review.role}
+        </p>
+
         <StarRating count={review.rating} />
-        <p className="text-text-muted text-[11px] leading-relaxed mt-2 line-clamp-3">
+
+        <p className="mt-4 text-[15px] leading-6 text-white line-clamp-3">
           {review.reviewText}
         </p>
       </div>
