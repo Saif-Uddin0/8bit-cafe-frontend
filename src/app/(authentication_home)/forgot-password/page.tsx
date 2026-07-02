@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         >
           {/* ── Logo ── */}
           <div className="flex justify-center mb-6">
-            <div className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 overflow-hidden shrink-0">
+            <Link href="/" className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 overflow-hidden shrink-0">
               <Image
                 src="/logo.png"
                 alt="8bit Cafe Logo"
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
                 sizes="100px"
                 className="object-cover p-1"
               />
-            </div>
+            </Link>
           </div>
 
           {/* ── Back to Login Link ── */}

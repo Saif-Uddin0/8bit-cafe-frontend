@@ -45,7 +45,7 @@ export default function LoginPage() {
         >
           {/* ── Logo ── */}
           <div className="flex justify-center mb-2">
-            <div className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-30 lg:h-30 overflow-hidden shrink-0">
+            <Link href="/"  className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-30 lg:h-30 overflow-hidden shrink-0">
               <Image
                 src="/logo.png"
                 alt="8bit Cafe Logo"
@@ -53,7 +53,7 @@ export default function LoginPage() {
                 sizes="100px"
                 className="object-cover p-1"
               />
-            </div>
+            </Link>
           </div>
 
           {/* ── Heading ── */}
