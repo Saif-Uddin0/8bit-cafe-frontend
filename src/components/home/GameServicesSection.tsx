@@ -131,7 +131,7 @@ export default function GameServicesSection() {
             grabCursor
             speed={650}
             autoplay={{
-              delay: 4000,
+              delay: 1000,
               disableOnInteraction: false,
               pauseOnMouseEnter: true,
             }}

@@ -48,7 +48,7 @@ export default function FoodCard({ item }: FoodCardProps) {
           bg-[#7E00FF33]
           pt-10 pb-5 px-5
           transition-all duration-300
-          hover:border-[#6C04D7] hover:shadow-[0_0_32px_rgba(108,4,215,0.35)]
+          hover:border-[#6C04D7] hover:shadow-[0_0_32px_rgba(108,4,215,0.35)] hover:cursor-pointer
         "
       >
         {/* Circular image — lifted above card */}
