@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function AboutSection() {
     return (
-        <section className="overflow-hidden bg-[#0A061A] py-16 sm:py-20 lg:py-15">
+        <section id="about" className="overflow-hidden bg-[#0A061A] py-16 sm:py-20 lg:py-15">
             <div className="mx-auto max-w-[1500px] px-5 sm:px-8 lg:px-12">
 
                 {/* Heading */}

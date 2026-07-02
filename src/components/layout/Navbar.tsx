@@ -11,7 +11,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#about", label: "About" },
   { href: "/#services", label: "Services" },
-  { href: "/#foods", label: "Foods" },
+  { href: "/food", label: "Food" },
   { href: "/#contact", label: "Contact" },
 ];
 
@@ -34,8 +34,8 @@ export default function Navbar() {
     if (href === "/") {
       return pathname === "/";
     }
-    if (href.startsWith("/#foods")) {
-      return pathname === "/foods" || pathname === "/foods/";
+    if (href === "/food") {
+      return pathname === "/food" || pathname === "/food/";
     }
     return false;
   };

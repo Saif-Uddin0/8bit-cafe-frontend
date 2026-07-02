@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer 
+    <footer id="contact"
       className="relative text-white font-sans overflow-hidden"
       style={{
         background: "linear-gradient(90deg, #6C04D7 0%, #CD4ECD 100%)"

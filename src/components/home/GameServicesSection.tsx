@@ -88,7 +88,7 @@ export default function GameServicesSection() {
   };
 
   return (
-    <section className="bg-[#080818] py-15 lg:py-18 relative overflow-hidden">
+    <section id="services" className="bg-[#080818] py-15 lg:py-18 relative overflow-hidden">
       {/* Ambient background glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] bg-[#6C04D7]/6 rounded-full blur-[160px]" />
