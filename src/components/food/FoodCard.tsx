@@ -5,6 +5,12 @@ import { Star, Clock, Truck, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "react-toastify";
 import type { FoodItem } from "./foodsData";
+import { useRouter } from "next/navigation";
+
+
+
+
+
 
 interface FoodCardProps {
   item: FoodItem;
@@ -12,8 +18,11 @@ interface FoodCardProps {
 
 export default function FoodCard({ item }: FoodCardProps) {
   const { addToCart } = useCart();
+  const router = useRouter();
 
-  const handleOrder = () => {
+  const handleOrder = (
+    // e.stopPropagation()
+  ) => {
     addToCart({
       id: item.id,
       name: item.name,
@@ -21,7 +30,7 @@ export default function FoodCard({ item }: FoodCardProps) {
       image: item.image,
       category: item.category,
     });
-    toast.success(`🍕 ${item.name} added to cart!`, {
+    toast.success(`${item.name} added to cart!`, {
       position: "top-right",
       autoClose: 2000,
       theme: "dark",
@@ -32,6 +41,7 @@ export default function FoodCard({ item }: FoodCardProps) {
     <div className="group relative flex flex-col items-center w-full h-full">
       {/* Card */}
       <div
+      onClick={() => router.push(`/foods/${item.id}`)}
         className="
           relative flex flex-col items-center w-full h-full
           rounded-[24px] border border-[#F862C9]/90
@@ -100,13 +110,17 @@ export default function FoodCard({ item }: FoodCardProps) {
         {/* Order button */}
         <button
           type="button"
-          onClick={handleOrder}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOrder();
+          }}
+
           className="
-            w-full flex items-center justify-center gap-2
-            bg-[#F6F2ED] 
-            py-2.5 px-4 rounded-md
-            hover:bg-white hover:shadow-[0_0_20px_rgba(205,78,205,0.45)]
-            active:scale-95 transition-all duration-200
+          w-full flex items-center justify-center gap-2
+          bg-[#F6F2ED]
+          py-2.5 px-4 rounded-md
+          hover:bg-white hover:shadow-[0_0_20px_rgba(205,78,205,0.45)]
+          active:scale-95 transition-all duration-200
           "
         >
           <Image
