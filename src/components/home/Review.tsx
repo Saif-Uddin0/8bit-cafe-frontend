@@ -60,7 +60,7 @@ export default function Review() {
       <div className="relative">
 
         {/* Heading */}
-        <div className="mb-42 sm:mb-56 md:mb-70 lg:mb-80 text-center">
+        <div className="mb-24 sm:mb-32 md:mb-40 lg:mb-64 xl:mb-72 text-center">
           <h2
             className="inline-block text-4xl sm:text-5xl lg:text-6xl bg-gradient-to-l from-[#6C04D7] to-[#CD4ECD] bg-clip-text text-transparent"
             style={{

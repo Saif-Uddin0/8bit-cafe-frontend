@@ -75,20 +75,19 @@ export default function ReviewCard({
         <div
           className="
           absolute
-          top-[-110px]
-          right-2
+    -top-[70px]
+    right-2
 
-          sm:top-[-130px]
+    sm:-top-[90px]
+    md:-top-[120px]
 
-          md:top-[-150px]
+    lg:-top-[180px]
+    lg:-right-3
 
-          lg:-top-[180px]
-          lg:-right-3
+    xl:-top-[200px]
+    xl:-right-5
 
-          xl:-top-[200px]
-          xl:-right-5
-
-          z-30
+    z-30
           "
         >
           <div
