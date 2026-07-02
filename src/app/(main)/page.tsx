@@ -15,13 +15,13 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      {/* <PromotionSlider />
+      <PromotionSlider />
       <AboutSection></AboutSection>
       <GameServicesSection />
       <FoodCategories isHomePage={true} />
       <DeliciousFastFood />
       <ChooseUs />
-      <Review /> */}
+      <Review />
       
     </>
   );

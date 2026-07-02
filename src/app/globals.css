@@ -297,3 +297,17 @@ html {
   background-clip: text;
   color: transparent;
 }
+
+/* ── Review marquee ticker ── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
