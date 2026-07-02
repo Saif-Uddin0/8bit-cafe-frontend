@@ -109,7 +109,7 @@ export const FOOD_ITEMS: FoodItem[] = [
     id: 6,
     name: "Garlic Bread",
     price: 9,
-    image: "https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=500&auto=format&fit=crop&q=80",
+    image: "https://i.postimg.cc/pdZyJTGy/classic-garlic-bread-84954-16x9.jpg",
     category: "Snack",
     rating: 4.4,
     reviewsCount: 95,
