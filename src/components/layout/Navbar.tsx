@@ -18,11 +18,13 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   const pathname = usePathname();
 
   const { state: { items }, toggleCart, totalQuantity } = useCart();
 
   useEffect(() => {
+    setMounted(true);
     const onScroll = (): void => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
@@ -117,7 +119,7 @@ export default function Navbar() {
               className="relative transition-colors duration-200 text-white hover:text-[#CD4ECD] p-2"
             >
               <ShoppingCart size={22} strokeWidth={1.8} />
-              {totalQuantity > 0 && (
+              {mounted && totalQuantity > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#EF3D86] text-[10px] font-bold text-white shadow-lg animate-pulse-glow">
                   {totalQuantity}
                 </span>
@@ -162,7 +164,7 @@ export default function Navbar() {
               className="relative transition-colors duration-200 text-white hover:text-[#CD4ECD] p-2"
             >
               <ShoppingCart size={22} strokeWidth={1.8} />
-              {totalQuantity > 0 && (
+              {mounted && totalQuantity > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF3D86] text-[9px] font-bold text-white shadow-lg">
                   {totalQuantity}
                 </span>
