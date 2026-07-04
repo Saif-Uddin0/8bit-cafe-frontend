@@ -96,7 +96,7 @@ export default function Footer() {
             </ul>
 
             {/* Social Links */}
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 mb-3 flex items-center gap-3">
               <span className="text-xs font-bold text-white/90">Follow Us On :</span>
               {/* Instagram */}
               <a href="#" className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-primary hover:scale-105 transition-transform" aria-label="Instagram">

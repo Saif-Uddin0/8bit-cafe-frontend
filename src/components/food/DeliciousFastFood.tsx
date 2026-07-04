@@ -19,10 +19,13 @@ export default function DeliciousFastFood() {
       <div className="relative mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
 
         {/* ── Section header ── */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8 sm:mb-10">
+        <div className="flex items-center justify-between gap-3 mb-8 sm:mb-10">
           <h2
-            className="text-4xl sm:text-5xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
-            style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
+            className="text-3xl sm:text-4xl lg:text-5xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
+            style={{
+              fontFamily: "var(--font-jersey-20)",
+              fontWeight: 400,
+            }}
           >
             Delicious Fast Food
           </h2>
@@ -30,12 +33,34 @@ export default function DeliciousFastFood() {
           <Link
             href="/foods"
             className="
-              inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/15
-              bg-[#1A0A38]/60 px-5 py-2 text-sm font-semibold text-white/85
-              hover:border-[#CD4ECD]/60 hover:text-white transition-all duration-200
-            "
+    inline-flex
+    shrink-0
+    items-center
+    gap-2
+    rounded-xl
+    border
+    border-white/15
+    bg-[#1A0A38]/60
+    px-3
+    py-2
+    sm:px-5
+    text-white/85
+    hover:border-[#CD4ECD]/60
+    hover:text-white
+    transition-all
+    duration-200
+  "
           >
-            <span>View All Foods</span>
+            {/* Mobile */}
+            <span className="sm:hidden text-[11px] font-semibold">
+              View All
+            </span>
+
+            {/* Desktop */}
+            <span className="hidden sm:inline text-sm font-semibold">
+              View All Foods
+            </span>
+
             <ArrowRight size={14} />
           </Link>
         </div>
