@@ -127,13 +127,16 @@ export default function Navbar() {
             </button>
 
             {/* Location */}
-            <button
-              type="button"
-              aria-label="Location"
-              className="transition-colors duration-200 text-white hover:text-[#CD4ECD] p-2"
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=8Bit+Cafe+Feni"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View on Google Maps"
             >
-              <MapPin size={22} strokeWidth={1.8} />
-            </button>
+              <MapPin
+                className="text-3xl text-white hover:text-[#7C3AED] transition cursor-pointer"
+              />
+            </a>
 
             {/* Sign In */}
             <Link
