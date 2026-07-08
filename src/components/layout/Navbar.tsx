@@ -164,7 +164,7 @@ export default function Navbar() {
               type="button"
               onClick={() => toggleCart(true)}
               aria-label="Open Cart"
-              className="relative transition-colors duration-200 text-white hover:text-[#CD4ECD] p-2"
+              className="relative p-2 text-white transition-colors duration-200 hover:text-[#CD4ECD]"
             >
               <ShoppingCart size={22} strokeWidth={1.8} />
               {mounted && totalQuantity > 0 && (
@@ -174,13 +174,29 @@ export default function Navbar() {
               )}
             </button>
 
+            {/* Mobile Location */}
+            <a
+              href="https://maps.app.goo.gl/MgfpztgG6WTqMhz28"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View Store Location"
+              title="View Store Location"
+              className="p-2 text-white transition-colors duration-200 hover:text-[#CD4ECD]"
+            >
+              <MapPin size={22} strokeWidth={1.8} />
+            </a>
+
             {/* Mobile Hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/20 hover:border-[#CD4ECD] transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 transition-colors hover:border-[#CD4ECD]"
               aria-label="Toggle menu"
             >
-              {mobileOpen ? <X size={20} className="text-white" /> : <Menu size={20} className="text-white" />}
+              {mobileOpen ? (
+                <X size={20} className="text-white" />
+              ) : (
+                <Menu size={20} className="text-white" />
+              )}
             </button>
           </div>
         </div>
