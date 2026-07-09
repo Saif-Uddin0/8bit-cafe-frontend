@@ -21,12 +21,15 @@ export default function RelatedFoods({
   return (
     <section className="max-w-[1200px] mx-auto mt-16 px-5">
       <h2
-        className="mb-8 text-4xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
+        className="mb-8 text-4xl sm:text-5xl lg:mb-10"
         style={{
-          fontFamily: "var(--font-Jersey-20)",
+          fontFamily: "var(--font-jersey-20)",
+          fontWeight: 400,
         }}
       >
-        You also like
+        <span className="inline-block bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent">
+         You Also Like
+        </span>
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

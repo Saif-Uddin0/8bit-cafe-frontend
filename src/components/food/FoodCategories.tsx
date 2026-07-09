@@ -62,18 +62,26 @@ export default function FoodCategories({
   }, [categoriesList]);
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      const activeEl = scrollContainerRef.current.querySelector(
-        `[data-category-id="${activeCategory}"]`
-      );
-      if (activeEl) {
-        activeEl.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
-    }
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Find the wrapper div that carries data-category-id
+    const activeEl = container.querySelector<HTMLElement>(
+      `[data-category-id="${activeCategory}"]`
+    );
+    if (!activeEl) return;
+
+    // Scroll ONLY the inner container — never the page viewport.
+    // scrollIntoView() walks up ALL scrollable ancestors and would shift the
+    // entire page sideways on mobile when the item is near the right edge.
+    const itemLeft   = activeEl.offsetLeft;
+    const itemWidth  = activeEl.offsetWidth;
+    const ctrWidth   = container.clientWidth;
+
+    container.scrollTo({
+      left: itemLeft - ctrWidth / 2 + itemWidth / 2,
+      behavior: "smooth",
+    });
   }, [activeCategory, categoriesList]);
 
   const CategoryButton = ({
@@ -87,7 +95,6 @@ export default function FoodCategories({
       type="button"
       onClick={() => handleCategoryClick(cat.id)}
       className="flex flex-col items-center gap-2.5 group/cat focus:outline-none"
-      data-category-id={cat.id}
     >
       <div
         className={[
@@ -200,6 +207,7 @@ export default function FoodCategories({
               {categoriesList.map((cat) => (
                 <div
                   key={cat.id}
+                  data-category-id={cat.id}
                   className="flex-shrink-0"
                 >
                   <CategoryButton

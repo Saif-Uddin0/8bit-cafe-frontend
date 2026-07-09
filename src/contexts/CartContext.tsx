@@ -21,7 +21,8 @@ type CartAction =
   | { type: "DECREASE_QTY"; payload: number }
   | { type: "REMOVE_FROM_CART"; payload: number }
   | { type: "TOGGLE_CART"; payload?: boolean }
-  | { type: "CLEAR_CART" };
+  | { type: "CLEAR_CART" }
+  | { type: "REHYDRATE"; payload: CartItem[] };
 
 const CART_STORAGE_KEY = "8bit_cafe_cart";
 
@@ -77,6 +78,11 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, items: [] };
     }
 
+    // Runs once after mount to restore persisted cart from localStorage
+    case "REHYDRATE": {
+      return { ...state, items: action.payload };
+    }
+
     default:
       return state;
   }
@@ -99,21 +105,26 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState, (initial) => {
-    if (typeof window !== "undefined") {
+  // Always start with empty state so server HTML and first client render match.
+  // localStorage is read AFTER hydration in the effect below.
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  // Rehydrate from localStorage after the first client-side render
+  useEffect(() => {
+    try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
-        try {
-          return { ...initial, items: JSON.parse(stored) };
-        } catch {
-          return initial;
+        const parsed: CartItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dispatch({ type: "REHYDRATE", payload: parsed });
         }
       }
+    } catch {
+      // corrupted storage — ignore
     }
-    return initial;
-  });
+  }, []);
 
-  // Sync to local storage
+  // Sync to localStorage on every cart change
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.items));
   }, [state.items]);

@@ -312,9 +312,23 @@ html {
 .marquee {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 45s linear infinite;
 }
 
+/* Slower on desktop */
+@media (min-width: 1024px) {
+  .marquee {
+    animation-duration: 70s;
+  }
+}
+
+/* Pause on desktop hover */
 .marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Pause on mobile touch — wrapping section must have touch-action:pan-y */
+.marquee-wrapper:active .marquee,
+.marquee-wrapper:focus-within .marquee {
   animation-play-state: paused;
 }

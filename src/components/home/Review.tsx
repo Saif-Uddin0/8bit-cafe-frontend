@@ -72,7 +72,10 @@ export default function Review() {
         </div>
 
         {/* Slider */}
-        <div className="overflow-visible  px-4 sm:px-6 lg:px-0">
+        <div
+          className="marquee-wrapper overflow-visible px-4 sm:px-6 lg:px-0"
+          style={{ touchAction: "pan-y" }}
+        >
           <div className="marquee flex w-max gap-5 sm:gap-6 md:gap-8 lg:gap-10">
             {reviews.map((review, index) => (
               <ReviewCard

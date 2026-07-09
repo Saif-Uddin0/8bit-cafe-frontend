@@ -27,7 +27,7 @@ export default function GameServiceCard({
         transition-all duration-500 ease-out select-none
 
         /* Mobile baseline – always full-width inside its slide */
-        h-[340px] sm:h-[370px]
+        h-[370px] sm:h-[400px]
 
         /* Focused (center) card */
         ${isCenter
