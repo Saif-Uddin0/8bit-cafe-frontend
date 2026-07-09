@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function AboutSection() {
     return (
-        <section id="about" className="overflow-hidden bg-[#0A061A] py-16 sm:py-20 lg:py-15">
+        <section id="about" className="overflow-hidden bg-[#0A061A] py-10 lg:py-15">
             <div className="mx-auto max-w-[1500px] px-5 sm:px-8 lg:px-12">
 
                 {/* Heading */}
@@ -73,7 +73,8 @@ export default function AboutSection() {
                                 className="
                   absolute
                   top-0
-                  right-0
+                  right-[6%]
+                  sm:right-0
 
                   w-[80%]
                   h-[22.5%]
@@ -98,7 +99,8 @@ export default function AboutSection() {
                             <div
                                 className="
                   absolute
-                  right-0
+                  right-[6%]
+                  sm:right-0
 
                   top-[25.8%]
 
@@ -126,7 +128,8 @@ export default function AboutSection() {
                   absolute
                   z-20
 
-                  left-[12.3%]
+                  left-[6%]
+                  sm:left-[12.3%]
                   top-[50.8%]
 
                   w-[32.3%]
@@ -158,7 +161,8 @@ export default function AboutSection() {
                   absolute
                   z-30
 
-                  right-0
+                  right-[6%]
+                  sm:right-0
                   bottom-[7.7%]
 
                   w-[55.4%]

@@ -68,7 +68,7 @@ export default function GameServiceCard({
             w-full flex items-center justify-center gap-1.5
             bg-[#F5ECFC] text-[#0A061A]
             text-[10px] sm:text-xs font-bold uppercase tracking-wider
-            py-2 sm:py-2.5 px-3 rounded-xl
+            py-3 sm:py-2.5 px-3 rounded-xl
             hover:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]
             active:scale-95 transition-all duration-200
           "

@@ -7,12 +7,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { FOOD_CATEGORIES } from "./foodsData";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
-import type { Swiper as SwiperClass } from "swiper";
-import "swiper/css";
-import "swiper/css/free-mode";
-
 interface FoodCategoriesProps {
   activeCategory?: string;
   onSelectCategory?: (category: string) => void;
@@ -27,7 +21,7 @@ export default function FoodCategories({
   isHomePage = false,
 }: FoodCategoriesProps) {
   const router = useRouter();
-  const swiperRef = useRef<SwiperClass | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
 
@@ -45,17 +39,42 @@ export default function FoodCategories({
     }
   };
 
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowLeftFade(scrollLeft > 5);
+      setShowRightFade(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
   useEffect(() => {
-    if (swiperRef.current) {
-      const idx = categoriesList.findIndex((c) => c.id === activeCategory);
-      if (idx !== -1) swiperRef.current.slideTo(idx, 300);
+    const el = scrollContainerRef.current;
+    if (el) {
+      handleScroll();
+      el.addEventListener("scroll", handleScroll);
+      window.addEventListener("resize", handleScroll);
+      return () => {
+        el.removeEventListener("scroll", handleScroll);
+        window.removeEventListener("resize", handleScroll);
+      };
+    }
+  }, [categoriesList]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const activeEl = scrollContainerRef.current.querySelector(
+        `[data-category-id="${activeCategory}"]`
+      );
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
     }
   }, [activeCategory, categoriesList]);
-
-  const handleSwiperProgress = (swiper: SwiperClass) => {
-    setShowLeftFade(!swiper.isBeginning);
-    setShowRightFade(!swiper.isEnd);
-  };
 
   const CategoryButton = ({
     cat,
@@ -68,6 +87,7 @@ export default function FoodCategories({
       type="button"
       onClick={() => handleCategoryClick(cat.id)}
       className="flex flex-col items-center gap-2.5 group/cat focus:outline-none"
+      data-category-id={cat.id}
     >
       <div
         className={[
@@ -157,7 +177,7 @@ export default function FoodCategories({
             ))}
           </div>
 
-          {/* Mobile/tablet (< lg): Swiper carousel */}
+          {/* Mobile/tablet (< lg): Smooth Horizontal Scroll Container */}
           <div className="lg:hidden relative">
             {/* Left fade — pointer-events-none so it never blocks clicks */}
             <div
@@ -169,32 +189,26 @@ export default function FoodCategories({
               aria-hidden="true"
               className={`absolute right-0 top-0 bottom-0 w-8 z-20 pointer-events-none bg-gradient-to-l from-[#CD4ECD] to-transparent transition-opacity duration-300 ${showRightFade ? "opacity-75" : "opacity-0"}`}
             />
-            <Swiper
-              modules={[FreeMode]}
-              freeMode={{ enabled: true, sticky: false }}
-              slidesPerView="auto"
-              spaceBetween={16}
-              centeredSlides={true}
-              centeredSlidesBounds={true}
-              slidesOffsetBefore={16}
-              slidesOffsetAfter={16}
-              onSwiper={(swiper) => {
-                swiperRef.current = swiper;
-                handleSwiperProgress(swiper);
+            
+            <div
+              ref={scrollContainerRef}
+              className="w-full overflow-x-auto flex flex-row gap-6 py-1 px-4 scrollbar-none scroll-smooth select-none"
+              style={{
+                WebkitOverflowScrolling: "touch",
               }}
-              onProgress={handleSwiperProgress}
-              onSlideChange={handleSwiperProgress}
-              className="w-full"
             >
               {categoriesList.map((cat) => (
-                <SwiperSlide key={cat.id} className="!w-auto py-1">
+                <div
+                  key={cat.id}
+                  className="flex-shrink-0"
+                >
                   <CategoryButton
                     cat={cat}
                     isSelected={showAllOption && activeCategory === cat.id}
                   />
-                </SwiperSlide>
+                </div>
               ))}
-            </Swiper>
+            </div>
           </div>
         </div>
       </div>

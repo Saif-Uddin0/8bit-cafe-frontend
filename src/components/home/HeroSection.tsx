@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Gamepad2, Coffee } from "lucide-react";
+import { Gamepad2, Hamburger, CupSoda } from "lucide-react";
 
 export default function HeroSection() {
   return (
@@ -68,11 +68,11 @@ export default function HeroSection() {
             {/* Book Gaming Session */}
             <Link
               href="/signup"
-              className="btn-primary text-sm sm:text-base gap-2.5"
+              className="btn-primary text-sm sm:text-base gap-2.5 w-[240px]"
               style={{
                 "--btn-height": "52px",
                 "--btn-radius": "14px",
-                "--btn-px": "32px",
+                "--btn-px": "0px",
               } as React.CSSProperties}
             >
               <Gamepad2 className="w-5 h-5 text-white" />
@@ -82,14 +82,17 @@ export default function HeroSection() {
             {/* Order Food */}
             <Link
               href="#foods"
-              className="btn-secondary text-sm sm:text-base gap-2.5"
+              className="btn-secondary border border-[#CD4ECD]/40 text-sm sm:text-base gap-2.5 w-[240px]"
               style={{
                 "--btn-height": "52px",
                 "--btn-radius": "14px",
-                "--btn-px": "40px",
+                "--btn-px": "0px",
+                backgroundColor: "#FAF6FD",
               } as React.CSSProperties}
             >
-              <Coffee className="w-5 h-5" style={{ stroke: "url(#btnGrad)" }} />
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Hamburger className="w-[18px] h-[18px]" style={{ stroke: "url(#btnGrad)" }} />
+              </div>
               <span>Order Food</span>
             </Link>
           </div>
