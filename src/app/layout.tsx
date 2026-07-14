@@ -67,7 +67,15 @@ export default function RootLayout({
           pauseOnHover
           draggable
           theme="dark"
-          toastStyle={{ background: "#12091F", border: "1px solid rgba(108,4,215,0.4)", borderRadius: "16px" }}
+          style={{ top: "1rem", right: "1rem", left: "1rem", width: "auto", maxWidth: "360px", marginLeft: "auto" }}
+          toastStyle={{
+            background: "#12091F",
+            border: "1px solid rgba(108,4,215,0.4)",
+            borderRadius: "14px",
+            fontSize: "0.8rem",
+            padding: "10px 14px",
+            lineHeight: "1.4",
+          }}
         />
       </body>
     </html>
