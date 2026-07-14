@@ -3,9 +3,48 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit } = useForm();
+  const router = useRouter();
+  const { login } = useAuth();
+
+  const onSubmit = async (data: any) => {
+    setLoading(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const res = await axios.post(`${baseUrl}/api/auth/login`, data, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      login(res.data);
+      toast.success("Login Successful!");
+      router.push("/");
+    } catch (error: any) {
+      console.error("Login error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Something went wrong!";
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#070616] px-4 py-8 sm:px-6">
@@ -80,7 +119,7 @@ export default function LoginPage() {
           </div>
 
           {/* ── Form ── */}
-          <form className="flex flex-col gap-4 sm:gap-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col gap-4 sm:gap-5" onSubmit={handleSubmit(onSubmit)}>
 
             {/* Email */}
             <div>
@@ -100,7 +139,7 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="Enter work email"
-                  required
+                  {...register("email", { required: true })}
                   className="block w-full bg-[#FFFFFF]/30 border border-purple-400/60 rounded-2xl text-white text-sm sm:text-base py-3.5 pl-11 pr-4 outline-none transition-all duration-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 placeholder:text-white/40"
                 />
               </div>
@@ -124,7 +163,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  required
+                  {...register("password", { required: true })}
                   className="block w-full bg-[#FFFFFF]/30 border border-purple-400/60 rounded-2xl text-white text-sm sm:text-base py-3.5 pl-11 pr-12 outline-none transition-all duration-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 placeholder:text-white/40"
                 />
                 <button
@@ -159,13 +198,14 @@ export default function LoginPage() {
             {/* ── Sign In Button ── */}
             <button
               type="submit"
-              className="w-full py-3.5 sm:py-4 mt-1 rounded-2xl text-white font-semibold text-sm sm:text-base tracking-wide cursor-pointer border-none transition-all duration-200 hover:brightness-110 active:scale-[0.985]"
+              disabled={loading}
+              className="w-full py-3.5 sm:py-4 mt-1 rounded-2xl text-white font-semibold text-sm sm:text-base tracking-wide cursor-pointer border-none transition-all duration-200 hover:brightness-110 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(180deg, #6C04D7 0%, #CD4ECD 100%)",
                 boxShadow: "0 6px 24px rgba(180,40,250,0.45)",
               }}
             >
-              Sign In
+              {loading ? "Processing..." : "Sign In"}
             </button>
           </form>
 

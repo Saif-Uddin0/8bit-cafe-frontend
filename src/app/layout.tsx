@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Orbitron, Jersey_20 } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import { CartProvider } from "@/contexts/CartContext";
+import QueryProvider from "@/providers/QueryProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
@@ -49,9 +51,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${orbitron.variable} ${jersey20.variable}`}>
       <body className="min-h-screen bg-background text-text-primary antialiased">
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </AuthProvider>
+        </QueryProvider>
         <ToastContainer
           position="top-right"
           autoClose={4500}

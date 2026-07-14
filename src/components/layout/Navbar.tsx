@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ShoppingCart, MapPin, Menu, X } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -22,6 +23,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const { state: { items }, toggleCart, totalQuantity } = useCart();
+  const { user, avatar, logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -139,22 +141,42 @@ export default function Navbar() {
             </a>
 
             {/* Sign In */}
-            <Link
-              href="/login"
-              className="btn-secondary text-sm"
-              style={
-                {
-                  "--btn-height": "42px",
-                  "--btn-radius": "10px",
-                  "--btn-px": "40px",
-                  "--btn-py": "26px",
-                  "--btn-mx": "0px",
-                  "--btn-my": "0px",
-                } as React.CSSProperties
-              }
-            >
-              <span>Sign In</span>
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-purple-500/50">
+                  <Image
+                    src={avatar}
+                    alt="User Avatar"
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </div>
+                <button
+                  onClick={logout}
+                  className="text-sm font-semibold text-white/80 hover:text-[#EF3D86] transition-colors cursor-pointer bg-transparent border-none"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="btn-secondary text-sm"
+                style={
+                  {
+                    "--btn-height": "42px",
+                    "--btn-radius": "10px",
+                    "--btn-px": "40px",
+                    "--btn-py": "26px",
+                    "--btn-mx": "0px",
+                    "--btn-my": "0px",
+                  } as React.CSSProperties
+                }
+              >
+                <span>Sign In</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Actions: Cart + Hamburger */}
@@ -234,14 +256,42 @@ export default function Navbar() {
               );
             })}
           </ul>
-          <Link
-            href="/login"
-            onClick={() => setMobileOpen(false)}
-            className="btn-secondary w-full text-center py-3 text-sm"
-            style={{ borderRadius: "14px" }}
-          >
-            <span>Sign In</span>
-          </Link>
+          {user ? (
+            <div className="flex items-center justify-between px-4 py-3 bg-[#181426]/60 border border-white/10 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-500/50">
+                  <Image
+                    src={avatar}
+                    alt="User Avatar"
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                </div>
+                <span className="text-sm font-medium text-white/90 max-w-[150px] truncate">
+                  {user?.name || user?.username || "Gamer"}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileOpen(false);
+                }}
+                className="text-xs font-semibold text-[#EF3D86] hover:text-[#CD4ECD] transition-colors cursor-pointer bg-transparent border-none"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="btn-secondary w-full text-center py-3 text-sm"
+              style={{ borderRadius: "14px" }}
+            >
+              <span>Sign In</span>
+            </Link>
+          )}
         </div>
       )}
     </header>

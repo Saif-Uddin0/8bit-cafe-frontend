@@ -3,6 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 interface SignUpFormData {
   firstName: string;
@@ -17,6 +20,9 @@ interface SignUpFormData {
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
+
   const [formData, setFormData] = useState<SignUpFormData>({
     firstName: "",
     lastName: "",
@@ -35,9 +41,53 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle signup logic here
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const res = await axios.post(`${baseUrl}/api/user/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      }, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      toast.success(res.data?.message || "Registration successfully!");
+      router.push("/");
+    } catch (error: any) {
+      console.error("Signup error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const responseData = error.response?.data;
+      const errors = responseData?.errors;
+
+      // Check errors array first (specific validation messages)
+      // then fall back to the general message field
+      const errMsg =
+        (Array.isArray(errors) && errors.length > 0
+          ? (typeof errors[0] === "string" ? errors[0] : errors[0]?.message || errors[0]?.msg || JSON.stringify(errors[0]))
+          : null) ||
+        responseData?.message ||
+        responseData?.error ||
+        error.message ||
+        "Something went wrong!";
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,7 +128,7 @@ export default function SignUpPage() {
         >
           {/* ── Logo ── */}
           <div className="flex justify-center mb-2">
-            <Link href="/"  className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 overflow-hidden shrink-0">
+            <Link href="/" className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 overflow-hidden shrink-0">
               <Image
                 src="/logo.png"
                 alt="8bit Cafe Logo"
@@ -336,13 +386,14 @@ export default function SignUpPage() {
             {/* ── Sign Up Button ── */}
             <button
               type="submit"
-              className="w-full py-3.5 sm:py-4 mt-1 rounded-2xl text-white font-semibold text-sm sm:text-base tracking-wide cursor-pointer border-none transition-all duration-200 hover:brightness-110 active:scale-[0.985]"
+              disabled={loading}
+              className="w-full py-3.5 sm:py-4 mt-1 rounded-2xl text-white font-semibold text-sm sm:text-base tracking-wide cursor-pointer border-none transition-all duration-200 hover:brightness-110 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(180deg, #6C04D7 0%, #CD4ECD 100%)",
                 boxShadow: "0 6px 24px rgba(180,40,250,0.45)",
               }}
             >
-              Sign Up
+              {loading ? "Processing..." : "Sign Up"}
             </button>
           </form>
 
