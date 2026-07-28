@@ -1,34 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { Star, Clock, Truck, ShoppingCart } from "lucide-react";
+import { Clock, Truck, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "react-toastify";
-import type { FoodItem } from "./foodsData";
 import { useRouter } from "next/navigation";
-
-
-
-
-
+import type { ApiFood } from "@/types/api";
 
 interface FoodCardProps {
-  item: FoodItem;
+  item: ApiFood;
 }
+
+const PLACEHOLDER_IMAGE = "/order-btn-icon.png";
 
 export default function FoodCard({ item }: FoodCardProps) {
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const handleOrder = (
-    // e.stopPropagation()
-  ) => {
+  const imageUrl = item.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
+
+  // ── Discount logic (exact backend field names) ──────────────────────────
+  const hasDiscount = item.isDisCount === true && item.discountPrice > 0;
+  const displayPrice = hasDiscount ? item.discountPrice : item.price;
+  const discountPct = item.disCountParcentage ?? 0;
+
+  const handleOrder = () => {
     addToCart({
-      id: item.id,
+      id: item.id as unknown as number,
       name: item.name,
-      price: item.price,
-      image: item.image,
-      category: item.category,
+      price: displayPrice,
+      image: imageUrl,
+      category: item.category?.name ?? "",
     });
     toast.success(`${item.name} added to cart!`, {
       position: "top-right",
@@ -39,9 +41,9 @@ export default function FoodCard({ item }: FoodCardProps) {
 
   return (
     <div className="group relative flex flex-col items-center w-full h-full">
-      {/* Card */}
+      {/* Card wrapper */}
       <div
-      onClick={() => router.push(`/foods/${item.id}`)}
+        onClick={() => router.push(`/foods/${item.id}`)}
         className="
           relative flex flex-col items-center w-full h-full
           rounded-[24px] border border-[#F862C9]/90
@@ -51,7 +53,23 @@ export default function FoodCard({ item }: FoodCardProps) {
           hover:border-[#6C04D7] hover:shadow-[0_0_32px_rgba(108,4,215,0.35)] hover:cursor-pointer
         "
       >
-        {/* Circular image — lifted above card */}
+        {/* ── Discount badge (top-left) ── */}
+        {hasDiscount && (
+          <div className="absolute top-3 left-3 z-20">
+            <div className="flex items-center gap-1 bg-gradient-to-r from-[#F862C9] to-[#CD4ECD] text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(248,98,201,0.5)] tracking-wide">
+              🔥 {discountPct}% OFF
+            </div>
+          </div>
+        )}
+
+        {/* UNAVAILABLE badge */}
+        {item.status !== "AVAILABLE" && (
+          <div className="absolute top-3 right-3 z-20 bg-black/70 text-white/50 text-[10px] font-semibold px-2.5 py-1 rounded-full">
+            Unavailable
+          </div>
+        )}
+
+        {/* ── Circular image ── */}
         <div
           className="
             relative w-[160px] h-[160px] rounded-full overflow-hidden flex-shrink-0
@@ -62,7 +80,7 @@ export default function FoodCard({ item }: FoodCardProps) {
           "
         >
           <Image
-            src={item.image}
+            src={imageUrl}
             alt={item.name}
             fill
             sizes="160px"
@@ -70,7 +88,7 @@ export default function FoodCard({ item }: FoodCardProps) {
           />
         </div>
 
-        {/* Name */}
+        {/* ── Name ── */}
         <h4
           className="text-base sm:text-lg text-white text-center font-bold mb-3 leading-tight"
           style={{ fontFamily: "var(--font-Roboto)" }}
@@ -78,71 +96,61 @@ export default function FoodCard({ item }: FoodCardProps) {
           {item.name}
         </h4>
 
-
-
-        {/* Delivery info rows */}
-        <div className="flex flex-col items-start gap-1.5 w-full mb-5 text-sm text-white/50">
-          {/* Rating */}
-          <div className="flex items-center justify-center gap-1.5">
-            <Star size={13} className="text-yellow-400 " />
-            <span className="text-sm text-white">
-              {item.rating}({item.reviewsCount})
-            </span>
-          </div>
-          <div className="flex items-center text-sm gap-1.5">
+        {/* ── Delivery info (no rating/reviews) ── */}
+        <div className="flex flex-col items-start gap-1.5 w-full mb-5 text-sm text-white/60">
+          <div className="flex items-center gap-1.5">
             <Clock size={13} className="text-white flex-shrink-0" />
-            <span>{item.deliveryTime} min</span>
+            <span>{item.delivery_time} min</span>
           </div>
-          <div className="flex text-sm items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             <Truck size={13} className="text-white flex-shrink-0" />
-            <span>Delivery charge {item.deliveryFee} Tk</span>
+            <span>Delivery {item.delivery_fee} Tk</span>
           </div>
         </div>
 
-        {/* Price */}
-        <div
-          className="text-[#FF5EA0] text-lg sm:text-xl font-semibold mb-4 tracking-wide"
-          style={{ fontFamily: "var(--font-Roboto)" }}
-        >
-          ${item.price}.00
+        {/* ── Price block ── */}
+        <div className="flex flex-col items-center gap-0.5 w-full mb-4">
+          {/* Main price (discounted or regular) */}
+          <span
+            className="text-[#FF5EA0] text-lg sm:text-xl font-bold tracking-wide"
+            style={{ fontFamily: "var(--font-Roboto)" }}
+          >
+            ৳{displayPrice}
+          </span>
+
+          {/* Original price with strikethrough — only when discount active */}
+          {hasDiscount && (
+            <span className="text-white/40 text-sm line-through leading-none">
+              ৳{item.price}
+            </span>
+          )}
         </div>
 
-        {/* Order button */}
+        {/* ── Order button ── */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             handleOrder();
           }}
-
           className="
-          w-full flex items-center justify-center gap-2
-          bg-[#F6F2ED]
-          py-2.5 px-4 rounded-md
-          hover:bg-white hover:shadow-[0_0_20px_rgba(205,78,205,0.45)]
-          active:scale-95 transition-all duration-200
+            w-full flex items-center justify-center gap-2
+            bg-[#F6F2ED]
+            py-2.5 px-4 rounded-md
+            hover:bg-white hover:shadow-[0_0_20px_rgba(205,78,205,0.45)]
+            active:scale-95 transition-all duration-200
           "
         >
-          <Image
-            src="/order-btn-icon.png"
-            alt="Order"
-            width={26}
-            height={26}
-            className="object-contain"
-          />
+          <ShoppingCart size={17} className="text-[#6C04D7]" />
           <span
             className="
-      bg-gradient-to-b
-      from-[#6C04D7]
-      to-[#CD4ECD]
-      bg-clip-text
-      text-transparent
-      font-semibold
-    "
-            style={{
-              fontFamily: "var(--font-Jersey-20)",
-            }}
-          >Order</span>
+              bg-gradient-to-b from-[#6C04D7] to-[#CD4ECD]
+              bg-clip-text text-transparent font-semibold
+            "
+            style={{ fontFamily: "var(--font-Jersey-20)" }}
+          >
+            Order
+          </span>
         </button>
       </div>
     </div>

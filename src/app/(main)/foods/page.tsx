@@ -5,8 +5,25 @@ import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import FoodCategories from "@/components/food/FoodCategories";
 import FoodCard from "@/components/food/FoodCard";
-import { FOOD_ITEMS } from "@/components/food/foodsData";
+import { useFoods } from "@/hooks/useFoods";
 
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+function FoodCardSkeleton() {
+  return (
+    <div className="relative flex flex-col items-center w-full rounded-[24px] border border-white/10 bg-white/5 pt-10 pb-5 px-5 animate-pulse">
+      <div className="w-[160px] h-[160px] rounded-full bg-white/10 mb-5" />
+      <div className="h-5 w-32 rounded-full bg-white/10 mb-3" />
+      <div className="flex flex-col gap-2 w-full mb-5">
+        <div className="h-4 w-24 rounded-full bg-white/10" />
+        <div className="h-4 w-32 rounded-full bg-white/10" />
+      </div>
+      <div className="h-6 w-16 rounded-full bg-white/10 mb-4" />
+      <div className="h-10 w-full rounded-md bg-white/10" />
+    </div>
+  );
+}
+
+// ─── Inner page (needs Suspense for useSearchParams) ─────────────────────────
 function FoodsPageContent() {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
@@ -18,9 +35,23 @@ function FoodsPageContent() {
     setActiveCategory(catParam ?? "All");
   }, [searchParams]);
 
-  const filteredFoods = FOOD_ITEMS.filter((item) => {
-    const matchesCategory = activeCategory === "All" || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const { data, isLoading, isError } = useFoods({
+    page: 1,
+    sortBy: "price",
+    sortOrder: "asc",
+  });
+
+  const allFoods = data?.foods ?? [];
+
+  // Client-side filter: category + search
+  const filteredFoods = allFoods.filter((item) => {
+    const matchesCategory =
+      activeCategory === "All" ||
+      item.category?.name === activeCategory ||
+      item.categoryId === activeCategory;
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -68,23 +99,47 @@ function FoodsPageContent() {
             {activeCategory === "All" ? "All Foods" : activeCategory}
           </h2>
           <p className="text-xs sm:text-sm text-white/40">
-            {filteredFoods.length} items found
+            {isLoading ? "Loading…" : `${filteredFoods.length} items found`}
           </p>
         </div>
 
-        {filteredFoods.length === 0 ? (
+        {/* Error state */}
+        {isError && (
+          <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl border border-red-500/20 bg-red-900/10 text-white/50 text-center">
+            <p className="text-base font-semibold">Failed to load foods</p>
+            <p className="text-sm">Please check your connection and try again.</p>
+          </div>
+        )}
+
+        {/* Skeleton loading */}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <FoodCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!isLoading && !isError && filteredFoods.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl border border-white/5 bg-[#12091F]/40 text-white/40 text-center">
             <Search size={44} strokeWidth={1.2} />
             <p className="text-base font-semibold">No items match your search</p>
             <button
               type="button"
-              onClick={() => { setActiveCategory("All"); setSearchQuery(""); }}
+              onClick={() => {
+                setActiveCategory("All");
+                setSearchQuery("");
+              }}
               className="mt-1 text-[#CD4ECD] text-xs font-bold uppercase tracking-widest hover:underline"
             >
               Clear filters
             </button>
           </div>
-        ) : (
+        )}
+
+        {/* Food grid */}
+        {!isLoading && !isError && filteredFoods.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredFoods.map((item) => (
               <FoodCard key={item.id} item={item} />
