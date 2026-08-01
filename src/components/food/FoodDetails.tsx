@@ -4,8 +4,13 @@ import Image from "next/image";
 import { Clock, Truck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import type { ApiFood } from "@/types/api";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/pagination";
 
 interface Props {
   food: ApiFood;
@@ -15,7 +20,7 @@ const PLACEHOLDER_IMAGE = "/order-btn-icon.png";
 
 export default function FoodDetails({ food }: Props) {
   const [qty, setQty] = useState(1);
-  const { addToCart } = useCart();
+  const { addItemAsync } = useCart();
 
   const imageUrl = food.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
   // ── Exact backend field names ──────────────────────────────────────────
@@ -24,20 +29,19 @@ export default function FoodDetails({ food }: Props) {
   const displayPrice = hasDiscount ? food.discountPrice : food.price;
   const totalPrice = displayPrice * qty;
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < qty; i++) {
-      addToCart({
-        id: food.id as unknown as number,
-        name: food.name,
-        price: displayPrice,
-        image: imageUrl,
-        category: food.category?.name ?? "",
+  const handleAddToCart = async () => {
+    try {
+      await addItemAsync(food.id, qty);
+      toast.success(`${qty} × ${food.name} added to cart!`, {
+        theme: "dark",
+        autoClose: 2000,
+      });
+    } catch {
+      toast.error(`Failed to add ${food.name} to cart. Please try again.`, {
+        theme: "dark",
+        autoClose: 3000,
       });
     }
-    toast.success(`${qty} × ${food.name} added to cart!`, {
-      theme: "dark",
-      autoClose: 2000,
-    });
   };
 
   return (
@@ -67,14 +71,36 @@ export default function FoodDetails({ food }: Props) {
               shadow-[0_0_50px_rgba(0,0,0,.5)]
             "
           >
-            <Image
-              src={imageUrl}
-              alt={food.name}
-              fill
-              className="object-cover"
-            />
+            {food.images && food.images.length > 0 ? (
+              <Swiper
+                modules={[Pagination, Autoplay]}
+                pagination={food.images.length > 1 ? { clickable: true } : false}
+                autoplay={food.images.length > 1 ? { delay: 3000, disableOnInteraction: false } : false}
+                loop={food.images.length > 1}
+                className="w-full h-full"
+              >
+                {food.images.map((img, idx) => (
+                  <SwiperSlide key={idx} className="relative w-full h-full rounded-full overflow-hidden">
+                    <Image
+                      src={img.url}
+                      alt={`${food.name} image ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+              <Image
+                src={PLACEHOLDER_IMAGE}
+                alt={food.name}
+                fill
+                className="object-cover"
+              />
+            )}
           </div>
         </div>
+
 
         {/* INFO */}
         <div>
@@ -86,7 +112,7 @@ export default function FoodDetails({ food }: Props) {
 
           {/* Discount badge */}
           {hasDiscount && (
-            <div className="mt-3 inline-flex items-center gap-1.5 bg-gradient-to-r from-[#F862C9] to-[#CD4ECD] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-[0_0_16px_rgba(248,98,201,0.5)]">
+            <div className="mt-3 inline-flex items-center gap-1.5 bg-gradient-to-r from-[#B7E9E9] to-[#66D1E5] text-black text-xs font-bold px-3 py-1.5 rounded-full">
               <span>🔥 {discountPct}% OFF — Special Price!</span>
             </div>
           )}

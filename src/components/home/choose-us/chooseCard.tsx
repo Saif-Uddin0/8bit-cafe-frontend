@@ -38,6 +38,7 @@ export default function ChooseCard({
           src={imageSrc}
           alt={imageAlt}
           fill
+          sizes="(max-width: 640px) 190px, (max-width: 1024px) 230px, (max-width: 1280px) 300px, 350px"
           className="object-cover"
         />
       </div>

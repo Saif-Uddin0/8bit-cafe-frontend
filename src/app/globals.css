@@ -332,3 +332,36 @@ html {
 .marquee-wrapper:focus-within .marquee {
   animation-play-state: paused;
 }
+
+/* ============================================================
+   Swiper Pagination Dot Overrides
+   ============================================================ */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.4) !important;
+  opacity: 1 !important;
+}
+.swiper-pagination-bullet-active {
+  background: #F862C9 !important;
+  box-shadow: 0 0 8px #F862C9 !important;
+  width: 18px !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* ============================================================
+   Custom Animation Utilities
+   ============================================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}

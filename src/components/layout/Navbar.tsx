@@ -3,18 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, MapPin, Menu, X } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { useCartUI } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#services", label: "Services" },
-  { href: "/foods", label: "Food" },
-  { href: "/#contact", label: "Contact" },
-];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState<boolean>(false);
@@ -22,8 +15,22 @@ export default function Navbar() {
   const [mounted, setMounted] = useState<boolean>(false);
   const pathname = usePathname();
 
-  const { state: { items }, toggleCart, totalQuantity } = useCart();
+  const { toggleCart } = useCartUI();
+  const { totalQuantity } = useCart();
   const { user, avatar, logout } = useAuth();
+  const router = useRouter();
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/#about", label: "About" },
+    { href: "/#services", label: "Services" },
+    { href: "/foods", label: "Food" },
+    ...(user ? [
+      { href: "/my-bookings",     label: "My Bookings" },
+      { href: "/my-transactions", label: "My Transactions" },
+    ] : []),
+    { href: "/#contact", label: "Contact" },
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -33,12 +40,10 @@ export default function Navbar() {
   }, []);
 
   const isLinkActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-    if (href === "/foods") {
-      return pathname === "/foods" || pathname === "/foods/";
-    }
+    if (href === "/") return pathname === "/";
+    if (href === "/foods") return pathname === "/foods" || pathname === "/foods/";
+    if (href === "/my-bookings") return pathname === "/my-bookings" || pathname === "/my-bookings/";
+    if (href === "/my-transactions") return pathname === "/my-transactions" || pathname === "/my-transactions/";
     return false;
   };
 
@@ -140,25 +145,24 @@ export default function Navbar() {
               />
             </a>
 
-            {/* Sign In */}
+            {/* Auth: Sign In / Sign Out */}
             {user ? (
-              <div className="flex items-center gap-4">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-purple-500/50">
-                  <Image
-                    src={avatar}
-                    alt="User Avatar"
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                </div>
-                <button
-                  onClick={logout}
-                  className="text-sm font-semibold text-white/80 hover:text-[#EF3D86] transition-colors cursor-pointer bg-transparent border-none"
-                >
-                  Sign Out
-                </button>
-              </div>
+              <button
+                onClick={() => { logout(); router.push("/login"); }}
+                className="btn-secondary text-sm"
+                style={
+                  {
+                    "--btn-height": "42px",
+                    "--btn-radius": "10px",
+                    "--btn-px": "40px",
+                    "--btn-py": "26px",
+                    "--btn-mx": "0px",
+                    "--btn-my": "0px",
+                  } as React.CSSProperties
+                }
+              >
+                <span>Sign Out</span>
+              </button>
             ) : (
               <Link
                 href="/login"
@@ -258,24 +262,16 @@ export default function Navbar() {
           </ul>
           {user ? (
             <div className="flex items-center justify-between px-4 py-3 bg-[#181426]/60 border border-white/10 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-500/50">
-                  <Image
-                    src={avatar}
-                    alt="User Avatar"
-                    fill
-                    sizes="32px"
-                    className="object-cover"
-                  />
-                </div>
-                <span className="text-sm font-medium text-white/90 max-w-[150px] truncate">
-                  {user?.name || user?.username || "Gamer"}
-                </span>
-              </div>
+              <span className="text-sm font-medium text-white/90 max-w-[180px] truncate">
+                {user?.firstName
+                  ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}`
+                  : user?.name || user?.username || "Gamer"}
+              </span>
               <button
                 onClick={() => {
                   logout();
                   setMobileOpen(false);
+                  router.push("/login");
                 }}
                 className="text-xs font-semibold text-[#EF3D86] hover:text-[#CD4ECD] transition-colors cursor-pointer bg-transparent border-none"
               >

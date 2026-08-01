@@ -1,13 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import type { ApiCategory } from "@/types/api";
 
-// ─── Deterministic gradient palette ─────────────────────────────────────────
+// ─── Gradient palette ─────────────────────────────────────────────────────────
 const GRADIENT_PALETTE: Array<[string, string]> = [
   ["#FF6B6B", "#FF8E53"],
   ["#4ECDC4", "#45B7D1"],
@@ -23,16 +20,13 @@ const GRADIENT_PALETTE: Array<[string, string]> = [
   ["#81ECEC", "#00CEC9"],
 ];
 
-function getCategoryGradient(index: number): [string, string] {
+function getGradient(index: number): [string, string] {
   return GRADIENT_PALETTE[index % GRADIENT_PALETTE.length];
 }
 
-/** Returns up to 2 characters for the category initial display */
-function getCategoryInitials(name: string): string {
+function getInitials(name: string): string {
   const words = name.trim().split(/[\s/]+/);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
 
@@ -58,54 +52,22 @@ function getCategoryImage(cat: ApiCategory): string | null {
   return null;
 }
 
-// ─── Skeleton card ───────────────────────────────────────────────────────────
-function CategorySkeleton() {
-  return (
-    <div className="flex flex-col items-center gap-2.5 flex-shrink-0">
-      <div
-        className="rounded-full animate-pulse bg-white/10"
-        style={{ width: 76, height: 76 }}
-      />
-      <div className="h-3 w-14 rounded-full bg-white/10 animate-pulse" />
-    </div>
-  );
-}
-
-// ─── Props ───────────────────────────────────────────────────────────────────
-interface FoodCategoriesProps {
-  activeCategory?: string;
-  onSelectCategory?: (categoryId: string) => void;
-  showAllOption?: boolean;
-  isHomePage?: boolean;
-}
-
-// ─── "All Items" synthetic entry ─────────────────────────────────────────────
-const ALL_CATEGORY: ApiCategory = {
-  id: "All",
-  type: "FOOD",
-  name: "All Items",
-  isDelete: false,
-  createdAt: "",
-};
-
-// ─── Single category button ──────────────────────────────────────────────────
-function CategoryButton({
+// ─── Category orb button ──────────────────────────────────────────────────────
+function CategoryOrb({
   cat,
   isSelected,
-  colorIndex,
+  from,
+  to,
   onClick,
 }: {
   cat: ApiCategory;
   isSelected: boolean;
-  colorIndex: number;
+  from: string;
+  to: string;
   onClick: () => void;
 }) {
   const [imgError, setImgError] = useState(false);
-  const [from, to] = cat.id === "All"
-    ? ["#CD4ECD", "#6C04D7"]
-    : getCategoryGradient(colorIndex);
-
-  const initials = getCategoryInitials(cat.name);
+  const initials = getInitials(cat.name);
   const imageUrl = !imgError ? getCategoryImage(cat) : null;
 
   return (
@@ -118,7 +80,7 @@ function CategoryButton({
       <div
         className={[
           "relative rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden",
-          "h-[76px] w-[76px] sm:h-[90px] sm:w-[90px] lg:h-[110px] lg:w-[110px]",
+          "h-[76px] w-[76px] sm:h-[90px] sm:w-[90px]",
           "transition-all duration-300 ease-out border-[3px]",
           isSelected
             ? "border-white scale-105 shadow-[0_0_24px_rgba(255,255,255,0.45)]"
@@ -126,15 +88,9 @@ function CategoryButton({
         ].join(" ")}
         style={{ background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }}
       >
-        {/* Subtle inner shine */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
-
-        {/* Abstract geometric accent ring */}
-        <div
-          className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full border-[6px] border-white/10 pointer-events-none"
-        />
-
-        {/* Image or initials text */}
+        <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full border-[6px] border-white/10 pointer-events-none" />
+        
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -146,8 +102,7 @@ function CategoryButton({
           <span
             className={[
               "relative z-10 font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]",
-              "text-[22px] sm:text-[26px] lg:text-[30px]",
-              "tracking-tight leading-none select-none",
+              "text-[20px] sm:text-[24px] tracking-tight leading-none select-none",
               "transition-transform duration-300 group-hover/cat:scale-110",
             ].join(" ")}
             style={{ fontFamily: "var(--font-jersey-20)" }}
@@ -156,15 +111,13 @@ function CategoryButton({
           </span>
         )}
 
-        {/* Hover shimmer overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent z-10 pointer-events-none opacity-60 transition-opacity group-hover/cat:opacity-0" />
       </div>
-
       {/* Label */}
       <span
         className={[
           "text-center font-bold tracking-wide uppercase transition-all duration-200",
-          "text-[10px] sm:text-xs lg:text-[13px]",
+          "text-[10px] sm:text-xs max-w-[80px] leading-tight",
           isSelected
             ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
             : "text-white/70 group-hover/cat:text-white",
@@ -176,14 +129,33 @@ function CategoryButton({
   );
 }
 
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+function CategorySkeleton() {
+  return (
+    <div className="flex flex-col items-center gap-2.5 flex-shrink-0">
+      <div className="rounded-full animate-pulse bg-white/10 h-[76px] w-[76px] sm:h-[90px] sm:w-[90px]" />
+      <div className="h-3 w-14 rounded-full bg-white/10 animate-pulse" />
+    </div>
+  );
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface GameCategoriesProps {
+  activeCategory: string;
+  onSelectCategory: (cat: string) => void;
+}
+
+// ─── "All Games" synthetic entry ─────────────────────────────────────────────
+const ALL_CATEGORY: ApiCategory = {
+  id: "All",
+  type: "GAME",
+  name: "All Games",
+  isDelete: false,
+  createdAt: "",
+};
+
 // ─── Main component ───────────────────────────────────────────────────────────
-export default function FoodCategories({
-  activeCategory = "All",
-  onSelectCategory,
-  showAllOption = false,
-  isHomePage = false,
-}: FoodCategoriesProps) {
-  const router = useRouter();
+export default function GameCategories({ activeCategory, onSelectCategory }: GameCategoriesProps) {
   const outerRef = useRef<HTMLDivElement>(null);      // wraps the purple card strip
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
@@ -198,16 +170,13 @@ export default function FoodCategories({
 
   const { data: apiCategories = [], isLoading } = useCategories();
 
-  // Filter to show FOOD categories only
-  const categoriesList = React.useMemo(() => {
-    const base = apiCategories.filter((c) => !c.isDelete && c.type?.toUpperCase() === "FOOD");
-    return showAllOption ? [ALL_CATEGORY, ...base] : base;
-  }, [apiCategories, showAllOption]);
+  // Filter to GAME-type categories only
+  const gameCategories = React.useMemo(() => {
+    const base = apiCategories.filter((c) => !c.isDelete && c.type?.toUpperCase() === "GAME");
+    return [ALL_CATEGORY, ...base];
+  }, [apiCategories]);
 
-  // ─── Measure whether items fit inside the available parent width ─────────────
-  // We compare total item width (from DOM children) against outerRef.clientWidth
-  // minus the horizontal padding of the scroll container.  This avoids the
-  // circular issue of comparing scrollWidth vs clientWidth on the same element.
+  // ─── Reliable fit-check: compare total item widths to the purple card's own clientWidth ───
   const checkFit = React.useCallback(() => {
     const outer = outerRef.current;
     const scroller = scrollContainerRef.current;
@@ -218,13 +187,11 @@ export default function FoodCategories({
     );
     if (items.length === 0) return;
 
-    // Horizontal padding inside the scroll container (px-6 sm:px-10 lg:px-12)
-    // We read it from computed style so it's exact at every breakpoint.
     const style = window.getComputedStyle(scroller);
     const padL = parseFloat(style.paddingLeft) || 0;
     const padR = parseFloat(style.paddingRight) || 0;
+    const gap = parseFloat(style.gap) || 24;
 
-    const gap = parseFloat(style.gap) || 24; // gap-6 = 24px default
     const totalItemsWidth =
       items.reduce((acc, el) => acc + el.offsetWidth, 0) +
       gap * (items.length - 1) +
@@ -234,14 +201,6 @@ export default function FoodCategories({
     const availableWidth = outer.clientWidth;
     setIsCentering(totalItemsWidth <= availableWidth);
   }, []);
-
-  const handleCategoryClick = (categoryId: string) => {
-    if (onSelectCategory) {
-      onSelectCategory(categoryId);
-    } else {
-      router.push(`/foods?category=${categoryId}`);
-    }
-  };
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
@@ -289,18 +248,17 @@ export default function FoodCategories({
         window.removeEventListener("resize", handleScroll);
       };
     }
-  }, [categoriesList]);
+  }, [gameCategories]);
 
-  // Run fit-check after layout settles, and on every resize
+  // Run fit-check after layout settles and on every resize
   useEffect(() => {
-    // Short timeout so the browser has painted the items before we measure
     const t = setTimeout(checkFit, 60);
     window.addEventListener("resize", checkFit);
     return () => {
       clearTimeout(t);
       window.removeEventListener("resize", checkFit);
     };
-  }, [categoriesList, checkFit]);
+  }, [gameCategories, checkFit]);
 
   // Convert vertical scroll wheel to horizontal scroll wheel over the carousel container
   useEffect(() => {
@@ -331,8 +289,9 @@ export default function FoodCategories({
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+    const targetId = activeCategory === "All" ? "All" : activeCategory;
     const activeEl = container.querySelector<HTMLElement>(
-      `[data-category-id="${activeCategory}"]`
+      `[data-category-id="${targetId}"]`
     );
     if (!activeEl) return;
     const itemLeft = activeEl.offsetLeft;
@@ -342,42 +301,33 @@ export default function FoodCategories({
       left: itemLeft - ctrWidth / 2 + itemWidth / 2,
       behavior: "smooth",
     });
-  }, [activeCategory, categoriesList]);
+  }, [activeCategory, gameCategories]);
 
-  const SKELETON_COUNT = 7;
+  const SKELETON_COUNT = 6;
 
   return (
-    <section className="relative bg-[#080818] py-10 sm:py-14 lg:py-20 overflow-hidden">
+    <section className="relative bg-[#080818] py-8 sm:py-12 overflow-hidden">
+      {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-60 top-1/3 h-[500px] w-[500px] rounded-full bg-[#6C04D7]/8 blur-[160px]" />
+        <div className="absolute -left-60 top-1/3 h-[400px] w-[400px] rounded-full bg-[#6C04D7]/8 blur-[140px]" />
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8 lg:mb-10">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <h2
-            className="text-3xl sm:text-4xl lg:text-5xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
+            className="text-2xl sm:text-3xl lg:text-4xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
             style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
           >
-            Food Categories
+            Game Categories
           </h2>
-          {isHomePage && (
-            <Link
-              href="/foods"
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/15 bg-[#1A0A38]/60 px-3 py-2 sm:px-5 text-white/85 hover:border-[#CD4ECD]/60 hover:text-white transition-all duration-200"
-            >
-              <span className="sm:hidden text-[11px] font-semibold">View All</span>
-              <span className="hidden sm:inline text-sm font-semibold">View All Categories</span>
-              <ArrowRight size={14} />
-            </Link>
-          )}
         </div>
 
         {/* Card strip — adaptive: w-fit centered when items fit, w-full carousel when they overflow */}
         <div
           ref={outerRef}
           className={[
-            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 lg:py-9 relative",
+            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 relative",
             isCentering ? "mx-auto max-w-full" : "w-full",
           ].join(" ")}
           style={{
@@ -385,7 +335,7 @@ export default function FoodCategories({
             boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
           }}
         >
-          {/* Edge fades — only meaningful in carousel mode */}
+          {/* Edge fades — only in carousel mode */}
           {!isCentering && (
             <>
               <div
@@ -410,12 +360,10 @@ export default function FoodCategories({
             onMouseUp={handleMouseUpOrLeave}
             onMouseLeave={handleMouseUpOrLeave}
             className={[
-              "py-1 px-6 sm:px-10 lg:px-12 scrollbar-none scroll-smooth select-none",
+              "py-1 px-6 sm:px-8 scrollbar-none scroll-smooth select-none",
               isCentering
-                // Centered mode: no overflow, items visually centered
-                ? "flex flex-row flex-wrap justify-center gap-6 sm:gap-8"
-                // Carousel mode: horizontal scroll + snap
-                : "w-full overflow-x-auto flex flex-row gap-6 sm:gap-8 snap-x snap-mandatory",
+                ? "flex flex-row flex-wrap justify-center gap-6"
+                : "w-full overflow-x-auto flex flex-row gap-6 snap-x snap-mandatory",
             ].join(" ")}
             style={{
               WebkitOverflowScrolling: "touch",
@@ -428,23 +376,28 @@ export default function FoodCategories({
                     <CategorySkeleton />
                   </div>
                 ))
-              : categoriesList.map((cat, idx) => (
-                  <div
-                    key={cat.id}
-                    data-category-id={cat.id}
-                    className={isCentering ? "flex-shrink-0" : "flex-shrink-0 snap-start"}
-                  >
-                    <CategoryButton
-                      cat={cat}
-                      isSelected={showAllOption ? activeCategory === cat.id : activeCategory === cat.name}
-                      colorIndex={idx}
-                      onClick={() => {
-                        if (hasDragged.current) return;
-                        handleCategoryClick(cat.id);
-                      }}
-                    />
-                  </div>
-                ))}
+              : gameCategories.map((cat, idx) => {
+                  const isAll = cat.id === "All";
+                  const [from, to] = isAll ? ["#CD4ECD", "#6C04D7"] : getGradient(idx - 1);
+                  return (
+                    <div
+                      key={cat.id}
+                      data-category-id={isAll ? "All" : cat.name}
+                      className={isCentering ? "flex-shrink-0" : "flex-shrink-0 snap-start"}
+                    >
+                      <CategoryOrb
+                        cat={cat}
+                        isSelected={isAll ? activeCategory === "All" : activeCategory === cat.name}
+                        from={from}
+                        to={to}
+                        onClick={() => {
+                          if (hasDragged.current) return;
+                          onSelectCategory(isAll ? "All" : cat.name);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
           </div>
         </div>
       </div>

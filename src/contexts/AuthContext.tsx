@@ -31,15 +31,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Fetch profile when token is available
+  // The correct endpoint is /api/user/getMe (returns 401 when unauth, 404 means route missing)
   const { data: profile, isLoading, isError } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       try {
-        const res = await axiosSecure.get("/api/auth/me");
-        // console.log("GET profile:", res.data);
-        // Adjust structure based on API response shape
+        const res = await axiosSecure.get("/api/user/getMe");
+        // Backend returns { data: { ...user }, success, message }
         return res.data?.data || res.data;
       } catch (error: any) {
+        // 401 = expired/missing token, clear session
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+          return null;
+        }
+        // 404 = route may not exist in this environment, swallow silently
         if (error.response?.status === 404) {
           return null;
         }
@@ -49,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     enabled: !!token,
     staleTime: 1000 * 60 * 5, // 5 minutes cache
     refetchOnWindowFocus: false,
-    retry: 1,
+    retry: 0, // Don't retry auth failures
   });
 
   // Sync user state with fetched profile query
@@ -65,8 +72,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Construct avatar URL
   const avatar = profile?.profile_image
     ? (profile.profile_image.startsWith("http")
-        ? profile.profile_image
-        : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${profile.profile_image}`)
+      ? profile.profile_image
+      : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${profile.profile_image}`)
     : "https://i.ibb.co/2kRZ0y9/user.png";
 
   // Login handler
@@ -76,15 +83,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const refreshToken = data?.refreshToken;
 
     if (accessToken) {
-      Cookies.set("accessToken", accessToken, { expires: 7 });
+      Cookies.set("accessToken", accessToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "Lax",
+      });
       setToken(accessToken);
+      // Invalidate profile and cart so they refetch immediately after login
+      queryClient.invalidateQueries({
+        queryKey: ["profile"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
     }
 
     if (refreshToken) {
-      Cookies.set("refreshToken", refreshToken, { expires: 7 });
+      // Cookies.set("refreshToken", refreshToken, { expires: 7 });
+      Cookies.set("refreshToken", refreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "Lax",
+      });
     }
 
-    // Set temporary user if user object exists in response
+    // If the login response embeds the user object, set it immediately
+    // so the UI can show name/avatar without waiting for the profile fetch
     if (data?.user) {
       setUser(data.user);
     }
@@ -96,8 +121,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     Cookies.remove("refreshToken");
     setToken(null);
     setUser(null);
-    // Clear TanStack Query Cache
-    queryClient.invalidateQueries({ queryKey: ["profile"] });
+    // Remove both profile and cart to prevent stale data from a previous user
+    queryClient.removeQueries({ queryKey: ["profile"] });
+    queryClient.removeQueries({ queryKey: ["cart"] });
   };
 
   const value = {

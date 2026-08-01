@@ -173,7 +173,8 @@ export default function AboutSection() {
                                     alt="Best in the town"
                                     width={360}
                                     height={82}
-                                    className="h-auto w-full"
+                                    style={{ height: "auto" }}
+                                    className="w-full"
                                 />
                             </div>
 

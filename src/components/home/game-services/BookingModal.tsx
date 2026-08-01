@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { X, Gamepad2, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Gamepad2, ChevronLeft, ChevronRight, Loader2, CalendarX } from "lucide-react";
 import { toast } from "react-toastify";
-import { SERVICES, TIME_SLOTS, type GameService } from "@/components/home/game-services/gameServicesData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGames } from "@/hooks/useGames";
+import { useAvailableSlots } from "@/hooks/useAvailableSlots";
+import { useQueryClient } from "@tanstack/react-query";
+import type { ApiGame, ApiAvailableSlot } from "@/types/api";
 
 // ─── Mini Calendar ─────────────────────────────────────────────────────────────
 
@@ -95,10 +99,25 @@ function CustomCalendar({
   );
 }
 
+// ─── Slot grid skeleton ───────────────────────────────────────────────────────
+
+function SlotSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-2 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3 max-h-[210px] overflow-y-auto">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-8 rounded-lg bg-white/5 animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface BookingFormData {
-  service: GameService;
+  service: ApiGame;
   duration: string;
   firstName: string;
   lastName: string;
@@ -106,9 +125,9 @@ export interface BookingFormData {
   phone: string;
   date: Date;
   timeSlot: string;
+  selectedSlot: ApiAvailableSlot;
 }
 
-// Internal RHF field shape
 interface FormFields {
   serviceId: string;
   duration: string;
@@ -120,39 +139,59 @@ interface FormFields {
 
 interface BookingModalProps {
   isOpen: boolean;
-  initialServiceId?: number;
+  initialServiceId?: string;
   onClose: () => void;
   onConfirm: (data: BookingFormData) => void;
 }
 
-// ─── Shared style helpers ─────────────────────────────────────────────────────
+// Shared style helpers 
 
 const fieldCls =
   "w-full bg-[#0A061A] border border-[#6C04D7]/40 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#CD4ECD] transition";
 
 const labelCls = "text-[10px] font-bold uppercase text-white/50 tracking-wider";
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Duration → durationMin mapping 
+function durationToMin(dur: string): number {
+  if (dur === "30 Minutes") return 30;
+  if (dur === "60 Minutes") return 60;
+  if (dur === "90 Minutes") return 90;
+  return 30;
+}
 
-/**
- * BookingModal — "Book Gaming Session" form.
- *
- * Uses React Hook Form for field management. Validation is intentionally
- * disabled for now; once a backend API is ready, add resolver/rules.
- * Uses react-toastify for any error notifications.
- */
+// Shared slot timer helpers 
+
+function getSlotExpiresAt(s: ApiAvailableSlot): number | null {
+  if (s.expiresAt) return new Date(s.expiresAt).getTime();
+  const secs = s.expiresInSeconds ?? s.expiredInSeconds;
+  if (secs !== undefined && secs !== null) return Date.now() + secs * 1000;
+  return null;
+}
+
+/** Formats seconds as MM:SS */
+function formatCountdown(secs: number): string {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// Component
+
 export default function BookingModal({
   isOpen,
-  initialServiceId = 1,
+  initialServiceId = "",
   onClose,
   onConfirm,
 }: BookingModalProps) {
-  const initial = SERVICES.find((s) => s.id === initialServiceId) ?? SERVICES[0];
+  const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const { data: gamesList } = useGames();
+  const games = gamesList ?? [];
 
   const { register, handleSubmit, watch, setValue } = useForm<FormFields>({
     defaultValues: {
-      serviceId: String(initial.id),
-      duration: initial.duration,
+      serviceId: initialServiceId || games[0]?.id || "",
+      duration: "30 Minutes",
       firstName: "",
       lastName: "",
       email: "",
@@ -161,18 +200,74 @@ export default function BookingModal({
   });
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [timeSlot, setTimeSlot] = useState("10:00 Am");
+  const [selectedSlot, setSelectedSlot] = useState<ApiAvailableSlot | null>(null);
   const [consent, setConsent] = useState(false);
+  const [slotInfoOpen, setSlotInfoOpen] = useState(false);
+  const [clickedSlotInfo, setClickedSlotInfo] = useState<ApiAvailableSlot | null>(null);
 
   const watchedServiceId = watch("serviceId");
+  const watchedDuration = watch("duration");
+  const durationMin = durationToMin(watchedDuration);
+
+  // Dynamic Pricing Calculation
+  const selectedGame = games.find((g) => g.id === watchedServiceId);
+  const originalPrice = selectedGame
+    ? (watchedDuration === "30 Minutes" ? selectedGame.price30Min : selectedGame.price60Min)
+    : 0;
+  const discountPct = selectedGame?.disCountParcenTage ?? 0;
+  const hasDiscount = selectedGame?.isDiscount === true && discountPct > 0;
+  const discountPrice = hasDiscount ? originalPrice - (originalPrice * discountPct / 100) : originalPrice;
+
+  // Fetch available slots from backend 
+  const {
+    data: slots = [],
+    isLoading: slotsLoading,
+    isError: slotsError,
+  } = useAvailableSlots({
+    gameId: watchedServiceId,
+    date: selectedDate,
+    durationMin,
+  });
+
+  // Auto-select first AVAILABLE slot when slots refresh
+  useEffect(() => {
+    if (slots.length > 0) {
+      const firstAvail = slots.find((s) => s.status === "AVAILABLE");
+      setSelectedSlot(firstAvail || null);
+    } else {
+      setSelectedSlot(null);
+    }
+  }, [slots]);
+
+  // Sync initial service id / games list
+  useEffect(() => {
+    if (initialServiceId) {
+      setValue("serviceId", initialServiceId);
+    } else if (games.length > 0) {
+      setValue("serviceId", games[0].id);
+    }
+  }, [initialServiceId, games, setValue]);
+
+  // Autofill user profile when logged in
+  // Handles both camelCase and snake_case field variants the backend may return
+  useEffect(() => {
+    if (profile) {
+      const firstName = profile.firstName || profile.first_name || profile.name?.split(" ")[0] || "";
+      const lastName = profile.lastName || profile.last_name || profile.name?.split(" ").slice(1).join(" ") || "";
+      const email = profile.email || "";
+      const phone = profile.phone || profile.phoneNumber || profile.contact_number || profile.mobile || "";
+
+      if (firstName) setValue("firstName", firstName);
+      if (lastName) setValue("lastName", lastName);
+      if (email) setValue("email", email);
+      if (phone) setValue("phone", phone);
+    }
+  }, [profile, setValue]);
 
   if (!isOpen) return null;
 
-  // Keep duration in sync when service changes
   const handleServiceChange = (id: string) => {
     setValue("serviceId", id);
-    const svc = SERVICES.find((s) => s.id === Number(id));
-    if (svc) setValue("duration", svc.duration);
   };
 
   const onSubmit = (fields: FormFields) => {
@@ -188,7 +283,19 @@ export default function BookingModal({
       });
       return;
     }
-    const service = SERVICES.find((s) => s.id === Number(fields.serviceId)) ?? SERVICES[0];
+    if (!selectedSlot) {
+      toast.error("Please select an available time slot.", {
+        position: "top-right", autoClose: 4000, theme: "dark",
+      });
+      return;
+    }
+    const service = games.find((s) => s.id === fields.serviceId);
+    if (!service) {
+      toast.error("Please select a valid service.", {
+        position: "top-right", autoClose: 4000, theme: "dark",
+      });
+      return;
+    }
     onConfirm({
       service,
       duration: fields.duration,
@@ -197,7 +304,8 @@ export default function BookingModal({
       email: fields.email,
       phone: fields.phone,
       date: selectedDate,
-      timeSlot,
+      timeSlot: selectedSlot.display,
+      selectedSlot,
     });
   };
 
@@ -239,7 +347,7 @@ export default function BookingModal({
                 onChange={(e) => handleServiceChange(e.target.value)}
                 className={fieldCls}
               >
-                {SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {games.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -247,8 +355,28 @@ export default function BookingModal({
               <select {...register("duration")} className={fieldCls}>
                 <option value="30 Minutes">30:00 Minutes</option>
                 <option value="60 Minutes">60:00 Minutes</option>
-                <option value="90 Minutes">90:00 Minutes</option>
               </select>
+            </div>
+          </div>
+
+          {/* Dynamic Pricing */}
+          <div className="bg-[#0A061A]/80 border border-[#6C04D7]/20 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className={labelCls}>Session Price</span>
+              <span className="text-[10px] text-white/30 font-medium tracking-wide">For {watchedDuration}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {hasDiscount ? (
+                <>
+                  <span className="text-sm text-white/40 line-through">৳{originalPrice.toFixed(0)}</span>
+                  <span className="text-xl font-bold text-[#EF3D86]">৳{discountPrice.toFixed(0)}</span>
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">
+                    {discountPct}% OFF
+                  </span>
+                </>
+              ) : (
+                <span className="text-xl font-bold text-[#CD4ECD]">৳{originalPrice.toFixed(0)}</span>
+              )}
             </div>
           </div>
 
@@ -278,26 +406,83 @@ export default function BookingModal({
 
           {/* Calendar + Time Slots */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-1">
+            {/* Calendar */}
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Preferred Date</label>
               <CustomCalendar selected={selectedDate} onSelect={setSelectedDate} />
             </div>
+
+            {/* Available Slots */}
             <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Availability for {dateLabel}</label>
-              <div className="grid grid-cols-3 gap-2 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3 max-h-[210px] overflow-y-auto">
-                {TIME_SLOTS.map((slot) => (
-                  <button
-                    key={slot} type="button"
-                    onClick={() => setTimeSlot(slot)}
-                    className={`
-                      py-1.5 text-[10px] font-bold rounded-lg transition-all border
-                      ${timeSlot === slot
-                        ? "bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] border-transparent text-white shadow-md scale-[1.04]"
-                        : "bg-[#12091F] border-white/5 hover:border-[#6C04D7]/50 text-white/60"}
-                    `}
-                  >{slot}</button>
-                ))}
+              <div className="flex items-center justify-between">
+                <label className={labelCls}>Availability for {dateLabel}</label>
+                {/* Duration hint pill */}
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#CD4ECD]/70 bg-[#CD4ECD]/10 px-2 py-0.5 rounded-full">
+                  {watchedDuration}
+                </span>
               </div>
+
+              {/* Loading */}
+              {slotsLoading && <SlotSkeleton />}
+
+              {/* Error — suggest off day */}
+              {slotsError && !slotsLoading && (
+                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center min-h-[130px]">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10">
+                    <CalendarX size={20} strokeWidth={1.5} className="text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-1">🚫 Off Day</p>
+                    <p className="text-white/50 text-[11px] leading-relaxed">
+                      No sessions available on this date.<br />
+                      <span className="text-white/30">Please select a different day.</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty — Off Day */}
+              {!slotsLoading && !slotsError && slots.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center min-h-[130px]">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10">
+                    <CalendarX size={20} strokeWidth={1.5} className="text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-1">🚫 Off Day</p>
+                    <p className="text-white/50 text-[11px] leading-relaxed">
+                      No sessions available on this date.<br />
+                      <span className="text-white/30">Please select a different day.</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Slots grid */}
+              {!slotsLoading && !slotsError && slots.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3 max-h-[210px] overflow-y-auto">
+                  {slots.map((slot) => {
+                    const isSelected = selectedSlot?.startTime === slot.startTime;
+                    return (
+                      <SlotButton
+                        key={slot.startTime}
+                        slot={slot}
+                        isSelected={isSelected}
+                        onClick={() => {
+                          if (slot.status === "AVAILABLE") {
+                            setSelectedSlot(slot);
+                          } else if (slot.status === "PENDING" || slot.status === "LOCKED") {
+                            setClickedSlotInfo(slot);
+                            setSlotInfoOpen(true);
+                          }
+                        }}
+                        onExpire={() => {
+                          queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -321,11 +506,203 @@ export default function BookingModal({
               Cancel
             </button>
             <button type="submit"
-              className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] hover:shadow-[0_0_24px_rgba(108,4,215,0.6)] text-white hover:scale-[1.02] active:scale-95 transition text-xs font-bold uppercase tracking-wider">
+              className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] hover:shadow-[0_0_24px_rgba(108,4,215,0.6)] text-white hover:scale-[1.02] active:scale-95 transition text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              {slotsLoading && <Loader2 size={13} className="animate-spin" />}
               Book Now
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Info modal for non-selectable slots */}
+      <SlotInfoModal
+        slot={clickedSlotInfo}
+        isOpen={slotInfoOpen}
+        onClose={() => {
+          setSlotInfoOpen(false);
+          setClickedSlotInfo(null);
+        }}
+        onExpire={() => {
+          queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Slot Button Subcomponent ──────────────────────────────────────────────────
+function SlotButton({
+  slot,
+  isSelected,
+  onClick,
+  onExpire,
+}: {
+  slot: ApiAvailableSlot;
+  isSelected: boolean;
+  onClick: () => void;
+  onExpire: () => void;
+}) {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    if (slot.status !== "PENDING") return;
+    const expiresAt = getSlotExpiresAt(slot);
+    if (!expiresAt) return;
+
+    const updateTimer = () => {
+      const diff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      setTimeLeft(diff);
+      if (diff <= 0) {
+        onExpire();
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [slot, onExpire]);
+
+  if (slot.status === "BOOKED") {
+    return (
+      <button
+        type="button"
+        disabled
+        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-red-950/20 border-red-500/30 text-red-400 cursor-not-allowed text-center"
+      >
+        <div className="font-bold">{slot.display}</div>
+        <div className="text-[8px] opacity-70 uppercase tracking-widest mt-0.5">Booked</div>
+      </button>
+    );
+  }
+
+  if (slot.status === "LOCKED") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-gray-900/60 border-gray-700/40 text-gray-400 hover:border-gray-500 transition text-center"
+      >
+        <div className="font-bold">{slot.display}</div>
+        <div className="text-[8px] opacity-70 uppercase tracking-widest mt-0.5">Locked</div>
+      </button>
+    );
+  }
+
+  if (slot.status === "PENDING") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-amber-950/20 border-amber-500/40 text-amber-300 hover:border-amber-500 transition text-center"
+      >
+        <div className="font-bold">{slot.display}</div>
+        <div className="text-[8px] uppercase tracking-wider mt-0.5 text-amber-500/90 font-extrabold animate-pulse">
+          Pending {timeLeft > 0 ? `(${formatCountdown(timeLeft)})` : ""}
+        </div>
+      </button>
+    );
+  }
+
+  // AVAILABLE
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        py-2.5 px-1.5 text-[10px] font-bold rounded-lg transition-all border text-center leading-tight
+        ${isSelected
+          ? "bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] border-transparent text-white shadow-md scale-[1.04]"
+          : "bg-[#12091F] border-white/5 hover:border-[#6C04D7]/50 text-white/60"}
+      `}
+    >
+      {slot.display}
+    </button>
+  );
+}
+
+// ─── Slot Info Modal Subcomponent ────────────────────────────────────────────────
+function SlotInfoModal({
+  slot,
+  isOpen,
+  onClose,
+  onExpire,
+}: {
+  slot: ApiAvailableSlot | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onExpire: () => void;
+}) {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    if (!isOpen || !slot || slot.status !== "PENDING") return;
+    const expiresAt = getSlotExpiresAt(slot);
+    if (!expiresAt) return;
+
+    const updateTimer = () => {
+      const diff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      setTimeLeft(diff);
+      if (diff <= 0) {
+        onExpire();
+        onClose();
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [slot, isOpen, onExpire, onClose]);
+
+  if (!isOpen || !slot) return null;
+
+  const isPending = slot.status === "PENDING";
+  const title = isPending ? "Slot Temporarily Reserved" : "Slot Unavailable";
+  const message = isPending
+    ? "This slot has been temporarily reserved by another player."
+    : "This slot is currently unavailable.";
+
+  const hasExpires = !!slot.expiresAt || slot.expiresInSeconds !== undefined || slot.expiredInSeconds !== undefined;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <div className="w-full max-w-[420px] bg-[#12091F] border border-amber-500/50 rounded-[20px] p-6 shadow-[0_10px_40px_rgba(245,158,11,0.2)] text-center animate-scaleUp">
+        <div className="flex flex-col items-center text-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-500">
+            <span className="text-xl font-bold">⚠️</span>
+          </div>
+
+          <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+            {title}
+          </h3>
+
+          <p className="text-white/60 text-xs leading-relaxed">
+            {message}
+          </p>
+
+          {isPending && hasExpires && (
+            <div className="bg-[#0A061A] border border-white/5 px-6 py-3 rounded-xl">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 mb-1">Time Remaining</p>
+              <p className="text-2xl font-mono font-bold text-amber-500 tracking-widest">
+                {formatCountdown(timeLeft)}
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 w-full mt-4">
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition"
+            >
+              Choose Another Slot
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 font-bold text-xs uppercase tracking-wider active:scale-95 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

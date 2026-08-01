@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import FoodCategories from "@/components/food/FoodCategories";
 import FoodCard from "@/components/food/FoodCard";
 import { useFoods } from "@/hooks/useFoods";
+import { useCategories } from "@/hooks/useCategories";
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 function FoodCardSkeleton() {
@@ -34,6 +35,29 @@ function FoodsPageContent() {
     const catParam = searchParams.get("category");
     setActiveCategory(catParam ?? "All");
   }, [searchParams]);
+
+  const { data: apiCategories = [] } = useCategories();
+
+  // Resolve activeCategory (may be a raw ID or a name) to a display name.
+  // Priority: exact name match → ID match → "Selected Category" fallback
+  const resolvedCategoryName = React.useMemo(() => {
+    if (activeCategory === "All") return "All Foods";
+    const byName = apiCategories.find(
+      (c) => c.name === activeCategory && c.type?.toUpperCase() === "FOOD"
+    );
+    if (byName) return byName.name;
+    const byId = apiCategories.find(
+      (c) => c.id === activeCategory && c.type?.toUpperCase() === "FOOD"
+    );
+    if (byId) return byId.name;
+    // If activeCategory looks like a UUID/ID (no spaces, long string), show fallback
+    return "Selected Category";
+  }, [activeCategory, apiCategories]);
+
+  const categorySubtitle = React.useMemo(() => {
+    if (activeCategory === "All") return "Browse our complete food collection.";
+    return `Showing all foods in this category.`;
+  }, [activeCategory]);
 
   const { data, isLoading, isError } = useFoods({
     page: 1,
@@ -91,16 +115,19 @@ function FoodsPageContent() {
       {/* ── Foods grid ── */}
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 pb-20">
         {/* Sub-header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-8">
-          <h2
-            className="text-3xl sm:text-4xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
-            style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
-          >
-            {activeCategory === "All" ? "All Foods" : activeCategory}
-          </h2>
-          <p className="text-xs sm:text-sm text-white/40">
-            {isLoading ? "Loading…" : `${filteredFoods.length} items found`}
-          </p>
+        <div className="flex flex-col gap-1 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <h2
+              className="text-3xl sm:text-4xl bg-gradient-to-r from-[#F862C9] to-[#873CE2] bg-clip-text text-transparent"
+              style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
+            >
+              {resolvedCategoryName}
+            </h2>
+            <p className="text-xs sm:text-sm text-white/40">
+              {isLoading ? "Loading…" : `${filteredFoods.length} items found`}
+            </p>
+          </div>
+          <p className="text-sm text-white/40">{categorySubtitle}</p>
         </div>
 
         {/* Error state */}

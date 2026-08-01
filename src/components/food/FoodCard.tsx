@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Clock, Truck, ShoppingCart } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import type { ApiFood } from "@/types/api";
@@ -14,7 +14,7 @@ interface FoodCardProps {
 const PLACEHOLDER_IMAGE = "/order-btn-icon.png";
 
 export default function FoodCard({ item }: FoodCardProps) {
-  const { addToCart } = useCart();
+  const { addItemAsync } = useCart();
   const router = useRouter();
 
   const imageUrl = item.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
@@ -24,19 +24,21 @@ export default function FoodCard({ item }: FoodCardProps) {
   const displayPrice = hasDiscount ? item.discountPrice : item.price;
   const discountPct = item.disCountParcentage ?? 0;
 
-  const handleOrder = () => {
-    addToCart({
-      id: item.id as unknown as number,
-      name: item.name,
-      price: displayPrice,
-      image: imageUrl,
-      category: item.category?.name ?? "",
-    });
-    toast.success(`${item.name} added to cart!`, {
-      position: "top-right",
-      autoClose: 2000,
-      theme: "dark",
-    });
+  const handleOrder = async () => {
+    try {
+      await addItemAsync(item.id, 1);
+      toast.success(`${item.name} added to cart!`, {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+      });
+    } catch {
+      toast.error(`Failed to add ${item.name} to cart. Please try again.`, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "dark",
+      });
+    }
   };
 
   return (
@@ -45,18 +47,20 @@ export default function FoodCard({ item }: FoodCardProps) {
       <div
         onClick={() => router.push(`/foods/${item.id}`)}
         className="
-          relative flex flex-col items-center w-full h-full
-          rounded-[24px] border border-[#F862C9]/90
-          bg-[#7E00FF33]
-          pt-10 pb-5 px-5
-          transition-all duration-300
-          hover:border-[#6C04D7] hover:shadow-[0_0_32px_rgba(108,4,215,0.35)] hover:cursor-pointer
-        "
+    relative flex flex-col items-center w-full h-full
+    rounded-[24px] border border-[#F862C9]/90
+    bg-[#7E00FF33]
+    pt-10 pb-5 px-5
+    transition-all duration-300
+    hover:border-[#6C04D7]
+    hover:shadow-[0_0_32px_rgba(108,4,215,0.35)]
+    hover:cursor-pointer
+"
       >
         {/* ── Discount badge (top-left) ── */}
         {hasDiscount && (
           <div className="absolute top-3 left-3 z-20">
-            <div className="flex items-center gap-1 bg-gradient-to-r from-[#F862C9] to-[#CD4ECD] text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(248,98,201,0.5)] tracking-wide">
+            <div className="flex items-center gap-1 bg-gradient-to-r from-[#B7E9E9] to-[#66D1E5] text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(248,98,201,0.5)] tracking-wide">
               🔥 {discountPct}% OFF
             </div>
           </div>
@@ -90,7 +94,15 @@ export default function FoodCard({ item }: FoodCardProps) {
 
         {/* ── Name ── */}
         <h4
-          className="text-base sm:text-lg text-white text-center font-bold mb-3 leading-tight"
+          className="
+    h-[56px]
+    flex items-center justify-center
+    text-base sm:text-lg
+    text-white text-center
+    font-bold leading-tight
+    mb-3
+    line-clamp-2
+  "
           style={{ fontFamily: "var(--font-Roboto)" }}
         >
           {item.name}
@@ -109,19 +121,21 @@ export default function FoodCard({ item }: FoodCardProps) {
         </div>
 
         {/* ── Price block ── */}
-        <div className="flex flex-col items-center gap-0.5 w-full mb-4">
-          {/* Main price (discounted or regular) */}
+        <div className="h-[40px] flex items-center justify-center gap-2 w-full mb-5">
           <span
-            className="text-[#FF5EA0] text-lg sm:text-xl font-bold tracking-wide"
+            className="text-[#FF5EA0] text-xl sm:text-2xl font-bold tracking-wide"
             style={{ fontFamily: "var(--font-Roboto)" }}
           >
             ৳{displayPrice}
           </span>
 
-          {/* Original price with strikethrough — only when discount active */}
-          {hasDiscount && (
-            <span className="text-white/40 text-sm line-through leading-none">
+          {hasDiscount ? (
+            <span className="text-white/40 text-sm line-through">
               ৳{item.price}
+            </span>
+          ) : (
+            <span className="invisible text-sm">
+              ৳000
             </span>
           )}
         </div>

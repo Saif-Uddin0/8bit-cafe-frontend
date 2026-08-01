@@ -6,6 +6,9 @@ export interface ApiCategory {
   name: string;
   isDelete: boolean;
   createdAt: string;
+  image?: string | { url: string };
+  images?: Array<string | { url: string }>;
+  imageUrl?: string;
 }
 
 export interface ApiCategoriesResponse {
@@ -55,3 +58,189 @@ export interface ApiFoodDetailResponse {
   success: boolean;
   message: string;
 }
+
+// ─── Game & Schedules ────────────────────────────────────────────────────────
+export interface ApiSchedule {
+  id: string;
+  gameId: string;
+  day: string;
+  openTime: string;
+  endTime: string;
+}
+
+export interface ApiGame {
+  id: string;
+  name: string;
+  price30Min: number;
+  price60Min: number;
+  images: ApiImage[];
+  description: string;
+  status: "AVAILABLE" | "UNAVAILABLE" | string;
+  isDiscount: boolean;
+  disCountParcenTage: number | null;
+  categoryId: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  schedules?: ApiSchedule[];
+  category?: {
+    id?: string;
+    name: string;
+  };
+}
+
+export interface ApiGamesResponse {
+  data: {
+    meta: { page: number; limit: number; total: number };
+    data: ApiGame[];
+  };
+}
+
+export interface ApiGameDetailResponse {
+  data: ApiGame;
+  success: boolean;
+  message: string;
+}
+
+// ─── Available Booking Slots 
+// GET /api/booking/availableSlote
+// Body: { gameId: string, date: string (ISO), durationMin: number }
+export interface ApiAvailableSlot {
+  display: string;          // e.g. "09:00 AM – 09:30 AM"
+  startTime: string;        // ISO timestamp
+  endTime: string;          // ISO timestamp
+  status: "AVAILABLE" | "PENDING" | "BOOKED" | "LOCKED" | string;
+  isLocked: boolean;
+  lockedByUserId: string | null;
+  expiredInSeconds: number | null;
+  expiresInSeconds?: number | null;
+  expiresAt?: string | null;
+}
+
+export interface ApiAvailableSlotsResponse {
+  data: ApiAvailableSlot[];
+}
+
+// ─── Bookings ────────────────────────────────────────────────────────────────
+export interface ApiBooking {
+  id: string;
+  userId: string;
+  gameId: string;
+  startTime: string;
+  durationMin: number;
+  // status = payment status from backend (PAID / PENDING / FAILED)
+  status: "PAID" | "PENDING" | "FAILED" | string;
+  // gameStatus = game lifecycle (NOT_STARTED / RUNNING / COMPLETED)
+  gameStatus: "NOT_STARTED" | "RUNNING" | "COMPLETED" | string;
+  expiresAt: string;
+  createdAt: string;
+  totalAmount: string;
+  serviceFee: string;
+  game?: ApiGame;
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    image: string;
+    phone: string;
+  };
+}
+
+export interface ApiMyBookingsResponse {
+  data: ApiBooking[];
+  success: boolean;
+  message: string;
+}
+
+// ─── Food Order ──────────────────────────────────────────────────────────────
+export interface ApiFoodOrderItem {
+  id: string;
+  foodOrderId: string;
+  foodId: string;
+  quantity: number;
+  price: number;
+}
+
+export interface ApiFoodOrder {
+  id: string;        // foodOrderId — used for payment/initialize
+  userId: string;
+  totalAmount: number;
+  serviceFee: number;
+  status: string;
+  createdAt: string;
+  items: ApiFoodOrderItem[];
+}
+
+export interface ApiFoodOrderResponse {
+  data: ApiFoodOrder;
+  success: boolean;
+  message: string;
+}
+
+// ─── Transactions ─────────────────────────────────────────────────────────────
+export interface ApiTransaction {
+  id: string;
+  userId: string;
+  paymentType: "GAME" | "FOOD" | string;
+  gameBookingId: string | null;
+  foodOrderId: string | null;
+  amount: number;
+  paymentMethod: string;
+  merchantTxnId: string;
+  customerOrderId: string;
+  transactionId: string;
+  transactionTypeId: number;
+  status: "SUCCESS" | "PENDING" | "FAILED" | string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerAddress: string | null;
+  customerCity: string | null;
+  customerPostcode: string | null;
+  valueA: string;   // paymentType repeated
+  valueB: string;   // bookingId or foodOrderId
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiTransactionsResponse {
+  data: ApiTransaction[];
+  success: boolean;
+  message: string;
+}
+
+// ─── Cart ────────────────────────────────────────────────────────────────────
+export interface ApiCartItem {
+  id: string;          // CartItem database ID (used for deletion)
+  quantity: number;
+  foodId: string;
+  food: ApiFood;       // Nested food details
+}
+
+export interface ApiCart {
+  id: string;
+  createdAt: string;
+  CartItems: ApiCartItem[];
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface ApiCartResponse {
+  data: ApiCart[];     // Backend returns cart inside an array
+  success: boolean;
+  message: string;
+}
+
+export interface ApiCartAddResponse {
+  success: boolean;
+  message: string;
+}
+
+
+
+
