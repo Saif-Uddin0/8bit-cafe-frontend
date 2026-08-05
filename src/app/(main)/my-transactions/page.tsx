@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyTransactions } from "@/hooks/useMyTransactions";
 import { useMyBookings } from "@/hooks/useMyBookings";
@@ -366,104 +366,120 @@ function SignInPrompt() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function MyTransactionsPage() {
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+function MyTransactionsPageContent() {
   const { user, loading: authLoading } = useAuth();
   const isAuthenticated = !!user;
 
   const { data: transactions = [], isLoading, isError } = useMyTransactions();
 
   return (
-    <div className="min-h-screen bg-[#0A0612] pt-28 pb-20 px-4 mt-20">
-      <div className="max-w-5xl mx-auto">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#0A0612] pt-28 pb-20 px-4 mt-20">
+        <div className="max-w-5xl mx-auto">
 
-        {/* Page Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#6C04D7]/20 border border-[#6C04D7]/30 flex items-center justify-center">
-            <Receipt className="text-[#CD4ECD]" size={22} />
-          </div>
-          <div>
-            <h1
-              className="text-3xl text-white uppercase tracking-wider leading-none"
-              style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
-            >
-              My Transactions
-            </h1>
-            <p className="text-white/40 text-xs mt-0.5">Your payment history</p>
-          </div>
-        </div>
-
-        {/* Auth loading */}
-        {authLoading && (
-          <div className="flex justify-center py-24">
-            <Loader2 size={32} className="animate-spin text-[#6C04D7]" />
-          </div>
-        )}
-
-        {/* Unauthenticated */}
-        {!authLoading && !isAuthenticated && <SignInPrompt />}
-
-        {/* Authenticated — loading */}
-        {!authLoading && isAuthenticated && isLoading && (
-          <div className="space-y-3">
-            <SkeletonRow />
-            <SkeletonRow />
-            <SkeletonRow />
-          </div>
-        )}
-
-        {/* Authenticated — error */}
-        {!authLoading && isAuthenticated && isError && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
-            <p className="text-red-400 font-bold text-sm mb-1">Failed to load transactions.</p>
-            <p className="text-white/40 text-xs">Please try refreshing the page.</p>
-          </div>
-        )}
-
-        {/* Authenticated — empty */}
-        {!authLoading && isAuthenticated && !isLoading && !isError && transactions.length === 0 && (
-          <EmptyTransactions />
-        )}
-
-        {/* Authenticated — Mobile Cards */}
-        {!authLoading && isAuthenticated && !isLoading && !isError && transactions.length > 0 && (
-          <>
-            {/* Mobile: cards */}
-            <div className="md:hidden space-y-3">
-              {transactions.map((txn) => (
-                <TransactionCard key={txn.id} txn={txn} />
-              ))}
+          {/* Page Header */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-[#6C04D7]/20 border border-[#6C04D7]/30 flex items-center justify-center">
+              <Receipt className="text-[#CD4ECD]" size={22} />
             </div>
+            <div>
+              <h1
+                className="text-3xl text-white uppercase tracking-wider leading-none"
+                style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
+              >
+                My Transactions
+              </h1>
+              <p className="text-white/40 text-xs mt-0.5">Your payment history</p>
+            </div>
+          </div>
 
-            {/* Desktop: table */}
-            <div className="hidden md:block bg-[#12091F] border border-[#6C04D7]/30 rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      {["Type", "Amount", "Method", "Transaction ID", "Merchant Txn ID", "Order ID", "Status", "Date", ""].map(
-                        (h) => (
-                          <th
-                            key={h}
-                            className="text-left py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-white/30"
-                          >
-                            {h}
-                          </th>
-                        )
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((txn) => (
-                      <TransactionTableRow key={txn.id} txn={txn} />
-                    ))}
-                  </tbody>
-                </table>
+          {/* Auth loading */}
+          {authLoading && (
+            <div className="flex justify-center py-24">
+              <Loader2 size={32} className="animate-spin text-[#6C04D7]" />
+            </div>
+          )}
+
+          {/* Unauthenticated */}
+          {!authLoading && !isAuthenticated && <SignInPrompt />}
+
+          {/* Authenticated — loading */}
+          {!authLoading && isAuthenticated && isLoading && (
+            <div className="space-y-3">
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </div>
+          )}
+
+          {/* Authenticated — error */}
+          {!authLoading && isAuthenticated && isError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
+              <p className="text-red-400 font-bold text-sm mb-1">Failed to load transactions.</p>
+              <p className="text-white/40 text-xs">Please try refreshing the page.</p>
+            </div>
+          )}
+
+          {/* Authenticated — empty */}
+          {!authLoading && isAuthenticated && !isLoading && !isError && transactions.length === 0 && (
+            <EmptyTransactions />
+          )}
+
+          {/* Authenticated — Mobile Cards */}
+          {!authLoading && isAuthenticated && !isLoading && !isError && transactions.length > 0 && (
+            <>
+              {/* Mobile: cards */}
+              <div className="md:hidden space-y-3">
+                {transactions.map((txn) => (
+                  <TransactionCard key={txn.id} txn={txn} />
+                ))}
               </div>
-            </div>
-          </>
-        )}
 
+              {/* Desktop: table */}
+              <div className="hidden md:block bg-[#12091F] border border-[#6C04D7]/30 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        {["Type", "Amount", "Method", "Transaction ID", "Merchant Txn ID", "Order ID", "Status", "Date", ""].map(
+                          (h) => (
+                            <th
+                              key={h}
+                              className="text-left py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-white/30"
+                            >
+                              {h}
+                            </th>
+                          )
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((txn) => (
+                        <TransactionTableRow key={txn.id} txn={txn} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
+  );
+}
+
+export default function MyTransactionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0A0612] flex items-center justify-center pt-24">
+        <Loader2 className="w-8 h-8 text-[#CD4ECD] animate-spin" />
+      </div>
+    }>
+      <MyTransactionsPageContent />
+    </Suspense>
   );
 }

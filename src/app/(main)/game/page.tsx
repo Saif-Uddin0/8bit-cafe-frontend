@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Search } from "lucide-react";
 import GameCategories from "@/components/game/GameCategories";
 import GameServiceCard from "@/components/home/game-services/GameServiceCard";
 import BookingModal, { type BookingFormData } from "@/components/home/game-services/BookingModal";
 import BookingSummaryModal from "@/components/home/game-services/BookingSummaryModal";
 import { useGames } from "@/hooks/useGames";
+import { loadPendingBooking, type PendingBookingData } from "@/utils/pendingBooking";
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 function GameCardSkeleton() {
@@ -38,9 +39,20 @@ function GamesPageContent() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string>("");
+  const [pendingData, setPendingData] = useState<PendingBookingData | null>(null);
 
   const { data: gamesList, isLoading, isError } = useGames();
   const allGames = gamesList ?? [];
+
+  // Auto-open booking modal if returning from login with saved booking data
+  useEffect(() => {
+    const pending = loadPendingBooking();
+    if (pending?.openModal) {
+      setSelectedGameId(pending.gameId);
+      setPendingData(pending);
+      setBookingOpen(true);
+    }
+  }, []);
 
   // Client-side filter: category + search
   const filteredGames = allGames.filter((game) => {
@@ -62,6 +74,7 @@ function GamesPageContent() {
     setBookingData(data);
     setBookingOpen(false);
     setSummaryOpen(true);
+    setPendingData(null);
   };
 
   const handlePaid = () => {
@@ -165,7 +178,8 @@ function GamesPageContent() {
         <BookingModal
           isOpen={bookingOpen}
           initialServiceId={selectedGameId}
-          onClose={() => setBookingOpen(false)}
+          initialData={pendingData ?? undefined}
+          onClose={() => { setBookingOpen(false); setPendingData(null); }}
           onConfirm={handleBookingConfirm}
         />
       )}

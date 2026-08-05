@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBookings } from "@/hooks/useMyBookings";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
   Gamepad2,
   Loader2,
@@ -46,7 +47,7 @@ function formatCountdown(secs: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// ─── Payment Status Badge (status field from API) ──────────────────────────
+// ─── Payment Status Badge ─────────────────────────────────────────────────────
 
 const PAYMENT_STATUS: Record<string, string> = {
   PAID: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
@@ -63,7 +64,7 @@ function PaymentBadge({ status }: { status: string }) {
   );
 }
 
-// ─── Game Status Badge (gameStatus field from API) ─────────────────────────
+// ─── Game Status Badge ────────────────────────────────────────────────────────
 
 const GAME_STATUS: Record<string, string> = {
   NOT_STARTED: "bg-blue-500/15  text-blue-400  border-blue-500/30",
@@ -107,24 +108,34 @@ function PendingCountdown({ expiresAt }: { expiresAt: string }) {
 // ─── Live Booking Countdown component (uses expiresAt) ──────────────────────────
 
 function BookingCountdown({ expiresAt }: { expiresAt: string }) {
+  const queryClient = useQueryClient();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const hasRefetched = useRef(false);
 
   useEffect(() => {
     const target = new Date(expiresAt).getTime();
     const update = () => {
       const diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
       setTimeLeft(diff);
+
+      if (diff <= 0 && !hasRefetched.current) {
+        hasRefetched.current = true;
+        queryClient.invalidateQueries({ queryKey: ["myBookings"] });
+      }
     };
+
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [expiresAt]);
+  }, [expiresAt, queryClient]);
 
   if (timeLeft === null) return <span className="text-white/40">Calculating...</span>;
 
   if (timeLeft <= 0) {
     return (
-      <span className="text-red-400 font-bold animate-pulse">Session Expired</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+        Session Expired
+      </span>
     );
   }
 
@@ -134,13 +145,13 @@ function BookingCountdown({ expiresAt }: { expiresAt: string }) {
 
   let timeString = "";
   if (hours > 0) {
-    timeString = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    timeString = `${hours}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
   } else {
-    timeString = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    timeString = `${minutes}m ${String(seconds).padStart(2, "0")}s`;
   }
 
   return (
-    <span className="text-[#CD4ECD] font-bold font-mono">
+    <span className="text-[#CD4ECD] font-bold font-mono text-xs sm:text-sm">
       {timeString}
     </span>
   );
@@ -376,7 +387,7 @@ function SignInPrompt() {
 
 // Page
 
-export default function MyBookingsPage() {
+function MyBookingsPageContent() {
   const { user, loading: authLoading } = useAuth();
   const isAuthenticated = !!user;
 
@@ -385,67 +396,81 @@ export default function MyBookingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0A0612] pt-28 pb-20 px-4 mt-20">
-      <div className="max-w-3xl mx-auto">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#0A0612] pt-28 pb-20 px-4 mt-20">
+        <div className="max-w-3xl mx-auto">
 
-        {/* Page Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#6C04D7]/20 border border-[#6C04D7]/30 flex items-center justify-center">
-            <Gamepad2 className="text-[#CD4ECD]" size={22} />
+          {/* Page Header */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-[#6C04D7]/20 border border-[#6C04D7]/30 flex items-center justify-center">
+              <Gamepad2 className="text-[#CD4ECD]" size={22} />
+            </div>
+            <div>
+              <h1
+                className="text-3xl text-white uppercase tracking-wider leading-none"
+                style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
+              >
+                My Bookings
+              </h1>
+              <p className="text-white/40 text-xs mt-0.5">Your gaming session history</p>
+            </div>
           </div>
-          <div>
-            <h1
-              className="text-3xl text-white uppercase tracking-wider leading-none"
-              style={{ fontFamily: "var(--font-jersey-20)", fontWeight: 400 }}
-            >
-              My Bookings
-            </h1>
-            <p className="text-white/40 text-xs mt-0.5">Your gaming session history</p>
-          </div>
+
+          {/* Auth loading */}
+          {authLoading && (
+            <div className="flex justify-center py-24">
+              <Loader2 size={32} className="animate-spin text-[#6C04D7]" />
+            </div>
+          )}
+
+          {/* Unauthenticated */}
+          {!authLoading && !isAuthenticated && <SignInPrompt />}
+
+          {/* Authenticated — loading skeletons */}
+          {!authLoading && isAuthenticated && isLoading && (
+            <div className="space-y-4">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          )}
+
+          {/* Authenticated — error */}
+          {!authLoading && isAuthenticated && isError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
+              <p className="text-red-400 font-bold text-sm mb-1">Failed to load bookings.</p>
+              <p className="text-white/40 text-xs">Please try refreshing the page.</p>
+            </div>
+          )}
+
+          {/* Authenticated — empty */}
+          {!authLoading && isAuthenticated && !isLoading && !isError && bookings.length === 0 && (
+            <EmptyBookings />
+          )}
+
+          {/* Authenticated — list */}
+          {!authLoading && isAuthenticated && !isLoading && !isError && bookings.length > 0 && (
+            <div className="space-y-4">
+              {bookings.map((booking) => (
+                <BookingCard key={booking.id} booking={booking} />
+              ))}
+            </div>
+          )}
+
         </div>
-
-        {/* Auth loading */}
-        {authLoading && (
-          <div className="flex justify-center py-24">
-            <Loader2 size={32} className="animate-spin text-[#6C04D7]" />
-          </div>
-        )}
-
-        {/* Unauthenticated */}
-        {!authLoading && !isAuthenticated && <SignInPrompt />}
-
-        {/* Authenticated — loading skeletons */}
-        {!authLoading && isAuthenticated && isLoading && (
-          <div className="space-y-4">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        )}
-
-        {/* Authenticated — error */}
-        {!authLoading && isAuthenticated && isError && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
-            <p className="text-red-400 font-bold text-sm mb-1">Failed to load bookings.</p>
-            <p className="text-white/40 text-xs">Please try refreshing the page.</p>
-          </div>
-        )}
-
-        {/* Authenticated — empty */}
-        {!authLoading && isAuthenticated && !isLoading && !isError && bookings.length === 0 && (
-          <EmptyBookings />
-        )}
-
-        {/* Authenticated — list */}
-        {!authLoading && isAuthenticated && !isLoading && !isError && bookings.length > 0 && (
-          <div className="space-y-4">
-            {bookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} />
-            ))}
-          </div>
-        )}
-
       </div>
-    </div>
+    </ProtectedRoute>
+  );
+}
+
+export default function MyBookingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0A0612] flex items-center justify-center pt-24">
+        <Loader2 className="w-8 h-8 text-[#CD4ECD] animate-spin" />
+      </div>
+    }>
+      <MyBookingsPageContent />
+    </Suspense>
   );
 }

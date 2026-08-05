@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Clock, Truck, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import type { ApiFood } from "@/types/api";
@@ -15,6 +16,7 @@ const PLACEHOLDER_IMAGE = "/order-btn-icon.png";
 
 export default function FoodCard({ item }: FoodCardProps) {
   const { addItemAsync } = useCart();
+  const { requireAuth } = useRequireAuth();
   const router = useRouter();
 
   const imageUrl = item.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
@@ -24,21 +26,23 @@ export default function FoodCard({ item }: FoodCardProps) {
   const displayPrice = hasDiscount ? item.discountPrice : item.price;
   const discountPct = item.disCountParcentage ?? 0;
 
-  const handleOrder = async () => {
-    try {
-      await addItemAsync(item.id, 1);
-      toast.success(`${item.name} added to cart!`, {
-        position: "top-right",
-        autoClose: 2000,
-        theme: "dark",
-      });
-    } catch {
-      toast.error(`Failed to add ${item.name} to cart. Please try again.`, {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "dark",
-      });
-    }
+  const handleOrder = () => {
+    requireAuth(async () => {
+      try {
+        await addItemAsync(item.id, 1);
+        toast.success(`${item.name} added to cart!`, {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+      } catch {
+        toast.error(`Failed to add ${item.name} to cart. Please try again.`, {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "dark",
+        });
+      }
+    });
   };
 
   return (

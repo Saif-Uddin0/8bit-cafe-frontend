@@ -2,19 +2,37 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export default function LoginPage() {
+function getSafeRedirectUrl(paramUrl: string | null): string {
+  if (!paramUrl) return "/";
+  // Decode URL if encoded
+  const decoded = decodeURIComponent(paramUrl);
+  // Ensure it's a relative path starting with '/' and NOT '//' or external schema (http:, https:, javascript:)
+  if (
+    decoded.startsWith("/") &&
+    !decoded.startsWith("//") &&
+    !decoded.includes(":")
+  ) {
+    return decoded;
+  }
+  return "/";
+}
+
+function LoginPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit } = useForm();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
+
+  const redirectTarget = getSafeRedirectUrl(searchParams.get("redirect"));
 
   const onSubmit = async (data: any) => {
     setLoading(true);
@@ -28,7 +46,7 @@ export default function LoginPage() {
 
       login(res.data);
       toast.success("Login Successful!");
-      router.push("/");
+      router.push(redirectTarget);
     } catch (error: any) {
       console.error("Login error details:", {
         message: error.message,
@@ -257,5 +275,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#070616] flex items-center justify-center text-white/50 text-sm">Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -16,11 +16,11 @@ export default function CartDrawer() {
     deliveryCharge,
     serviceFee,
     totalPrice,
-    addItemAsync,
-    removeItem,
-    decrementItemAsync,
+    updateQuantityAsync,
+    removeItemAsync,
   } = useCart();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [inFlightItemIds, setInFlightItemIds] = useState<Set<string>>(new Set());
 
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -47,6 +47,40 @@ export default function CartDrawer() {
       return;
     }
     setIsSummaryOpen(true);
+  };
+
+  const handleIncreaseQty = async (itemId: string, currentQty: number) => {
+    try {
+      await updateQuantityAsync(itemId, "increment");
+    } catch {
+      toast.error("Failed to update cart quantity.", { theme: "dark", autoClose: 2500 });
+    }
+  };
+
+  const handleDecreaseQty = async (itemId: string, currentQty: number) => {
+    try {
+      if (currentQty > 1) {
+        await updateQuantityAsync(itemId, "decrement");
+      }
+    } catch {
+      toast.error("Failed to update cart quantity.", { theme: "dark", autoClose: 2500 });
+    }
+  };
+
+  const handleRemove = async (itemId: string) => {
+    if (inFlightItemIds.has(itemId)) return;
+    setInFlightItemIds((prev) => new Set(prev).add(itemId));
+    try {
+      await removeItemAsync(itemId);
+    } catch {
+      toast.error("Failed to remove item from cart.", { theme: "dark", autoClose: 2500 });
+    } finally {
+      setInFlightItemIds((prev) => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
+    }
   };
 
   return (
@@ -162,41 +196,36 @@ export default function CartDrawer() {
                         {/* RIGHT */}
                         <div className="flex items-center gap-3 mt-2">
                           <button
-                            onClick={async () => {
-                              try {
-                                await addItemAsync(item.foodId, 1);
-                              } catch {
-                                toast.error("Failed to update quantity.", { theme: "dark", autoClose: 2500 });
-                              }
-                            }}
-                            className="text-[#C300FF] hover:scale-110 transition"
+                            type="button"
+                            onClick={() => handleDecreaseQty(item.id, item.quantity)}
+                            className={`text-[#C300FF] hover:scale-110 active:scale-95 transition-all duration-300 ease-in-out ${
+                              item.quantity > 1
+                                ? "opacity-100 scale-100 pointer-events-auto"
+                                : "opacity-0 scale-50 pointer-events-none"
+                            }`}
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={18} />
+                          </button>
+                          <span className="font-bold text-black text-lg w-4 text-center select-none">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleIncreaseQty(item.id, item.quantity)}
+                            className="text-[#C300FF] hover:scale-110 active:scale-95 transition"
+                            aria-label="Increase quantity"
                           >
                             <Plus size={18} />
                           </button>
-                          <span className="font-bold text-black text-lg w-4 text-center">
-                            {item.quantity}
-                          </span>
-                          {item.quantity > 1 ? (
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await decrementItemAsync(item.foodId, item.id, item.quantity);
-                                } catch {
-                                  toast.error("Failed to update quantity.", { theme: "dark", autoClose: 2500 });
-                                }
-                              }}
-                              className="text-[#C300FF] hover:scale-110 transition"
-                            >
-                              <Minus size={18} />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => removeItem(item.id)}
-                              className="text-gray-500 hover:text-red-500 transition"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(item.id)}
+                            className="text-gray-500 hover:text-red-500 active:scale-95 transition"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -93,7 +93,14 @@ export default function FoodCheckoutModal({
         );
       }
 
-      // Invalidate cart — the payment gateway will handle the final state
+      // Reset cart query cache to empty array so badge instantly becomes 0
+      queryClient.setQueryData(["cart"], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data ? [{ ...old.data[0], CartItems: [] }] : [],
+        };
+      });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
 
       // Redirect to the payment gateway

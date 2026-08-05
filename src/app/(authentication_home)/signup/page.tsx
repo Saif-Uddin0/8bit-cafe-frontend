@@ -64,7 +64,7 @@ export default function SignUpPage() {
       });
 
       toast.success(res.data?.message || "Registration successfully!");
-      router.push("/");
+      router.push("/login");
     } catch (error: any) {
       console.error("Signup error details:", {
         message: error.message,

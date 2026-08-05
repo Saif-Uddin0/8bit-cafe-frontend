@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { X, Gamepad2, ChevronLeft, ChevronRight, Loader2, CalendarX } from "lucide-react";
 import { toast } from "react-toastify";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGames } from "@/hooks/useGames";
 import { useAvailableSlots } from "@/hooks/useAvailableSlots";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ApiGame, ApiAvailableSlot } from "@/types/api";
+import { savePendingBooking, clearPendingBooking, type PendingBookingData } from "@/utils/pendingBooking";
 
 // ─── Mini Calendar ─────────────────────────────────────────────────────────────
 
@@ -103,11 +105,11 @@ function CustomCalendar({
 
 function SlotSkeleton() {
   return (
-    <div className="grid grid-cols-3 gap-2 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3 max-h-[210px] overflow-y-auto">
-      {Array.from({ length: 9 }).map((_, i) => (
+    <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[285px] overflow-hidden">
+      {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
-          className="h-8 rounded-lg bg-white/5 animate-pulse"
+          className="h-11 rounded-xl bg-white/5 animate-pulse"
         />
       ))}
     </div>
@@ -140,6 +142,8 @@ interface FormFields {
 interface BookingModalProps {
   isOpen: boolean;
   initialServiceId?: string;
+  /** Pending booking data restored from sessionStorage after login redirect */
+  initialData?: PendingBookingData;
   onClose: () => void;
   onConfirm: (data: BookingFormData) => void;
 }
@@ -148,6 +152,9 @@ interface BookingModalProps {
 
 const fieldCls =
   "w-full bg-[#0A061A] border border-[#6C04D7]/40 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#CD4ECD] transition";
+
+const fieldErrorCls =
+  "w-full bg-[#0A061A] border border-red-500/60 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-red-400 transition";
 
 const labelCls = "text-[10px] font-bold uppercase text-white/50 tracking-wider";
 
@@ -180,15 +187,21 @@ function formatCountdown(secs: number): string {
 export default function BookingModal({
   isOpen,
   initialServiceId = "",
+  initialData,
   onClose,
   onConfirm,
 }: BookingModalProps) {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { profile, user } = useAuth();
   const { data: gamesList } = useGames();
   const games = gamesList ?? [];
 
-  const { register, handleSubmit, watch, setValue } = useForm<FormFields>({
+  // Tracks whether we have already attempted to restore the saved slot
+  const hasRestoredSlot = useRef(false);
+
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormFields>({
     defaultValues: {
       serviceId: initialServiceId || games[0]?.id || "",
       duration: "30 Minutes",
@@ -229,14 +242,35 @@ export default function BookingModal({
     durationMin,
   });
 
-  // Auto-select first AVAILABLE slot when slots refresh
+  // Auto-select slot when slots refresh.
+  // On first load (after a login redirect), try to restore the saved slot.
+  // On subsequent date changes, fall back to the first available slot.
   useEffect(() => {
     if (slots.length > 0) {
-      const firstAvail = slots.find((s) => s.status === "AVAILABLE");
-      setSelectedSlot(firstAvail || null);
+      const savedStartTime = initialData?.selectedSlotStartTime;
+      if (savedStartTime && !hasRestoredSlot.current) {
+        hasRestoredSlot.current = true;
+        const savedSlot = slots.find(
+          (s) => s.startTime === savedStartTime && s.status === "AVAILABLE"
+        );
+        if (savedSlot) {
+          setSelectedSlot(savedSlot);
+        } else {
+          toast.warn(
+            "Your previously selected time slot is no longer available. Please choose another.",
+            { theme: "dark", autoClose: 5000, position: "top-right" }
+          );
+          const firstAvail = slots.find((s) => s.status === "AVAILABLE");
+          setSelectedSlot(firstAvail || null);
+        }
+      } else {
+        const firstAvail = slots.find((s) => s.status === "AVAILABLE");
+        setSelectedSlot(firstAvail || null);
+      }
     } else {
       setSelectedSlot(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slots]);
 
   // Sync initial service id / games list
@@ -264,7 +298,29 @@ export default function BookingModal({
     }
   }, [profile, setValue]);
 
+  // Restore saved booking form data (game, duration, personal info, date)
+  // after the user returns from the login redirect.
+  // Profile effect runs afterwards and will correctly override email/phone.
+  useEffect(() => {
+    if (!initialData) return;
+    if (initialData.gameId) setValue("serviceId", initialData.gameId);
+    if (initialData.duration) setValue("duration", initialData.duration);
+    if (initialData.firstName) setValue("firstName", initialData.firstName);
+    if (initialData.lastName) setValue("lastName", initialData.lastName);
+    if (initialData.email) setValue("email", initialData.email);
+    if (initialData.phone) setValue("phone", initialData.phone);
+    if (initialData.selectedDate) setSelectedDate(new Date(initialData.selectedDate));
+  // Run once on mount (initialData is stable)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!isOpen) return null;
+
+  /** Clears any pending booking state and calls the parent's onClose */
+  const handleClose = () => {
+    clearPendingBooking();
+    onClose();
+  };
 
   const handleServiceChange = (id: string) => {
     setValue("serviceId", id);
@@ -296,6 +352,31 @@ export default function BookingModal({
       });
       return;
     }
+
+    // ── Auth gate ── save form to sessionStorage and redirect to login
+    if (!user) {
+      savePendingBooking({
+        gameId: fields.serviceId,
+        duration: fields.duration,
+        firstName: fields.firstName,
+        lastName: fields.lastName,
+        email: fields.email,
+        phone: fields.phone,
+        selectedDate: selectedDate.toISOString(),
+        selectedSlotStartTime: selectedSlot.startTime,
+        openModal: true,
+      });
+      toast.info(
+        "Please sign in to continue. Your booking details have been saved.",
+        { theme: "dark", autoClose: 3500, position: "top-right" }
+      );
+      setTimeout(() => {
+        router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      }, 1200);
+      return;
+    }
+
+    clearPendingBooking();
     onConfirm({
       service,
       duration: fields.duration,
@@ -330,7 +411,7 @@ export default function BookingModal({
               Book Gaming Session
             </h3>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition" aria-label="Close">
+          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition" aria-label="Close">
             <X size={18} />
           </button>
         </div>
@@ -382,25 +463,63 @@ export default function BookingModal({
 
           {/* Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>First Name</label>
-              <input {...register("firstName")} type="text" placeholder="Enter first name" className={fieldCls} />
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>First Name <span className="text-red-400">*</span></label>
+              <input
+                {...register("firstName", { required: "First name is required" })}
+                type="text"
+                placeholder="Enter first name"
+                className={errors.firstName ? fieldErrorCls : fieldCls}
+              />
+              {errors.firstName && (
+                <p className="text-red-400 text-[10px] font-medium mt-0.5">{errors.firstName.message}</p>
+              )}
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Last Name</label>
-              <input {...register("lastName")} type="text" placeholder="Enter last name" className={fieldCls} />
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Last Name <span className="text-red-400">*</span></label>
+              <input
+                {...register("lastName", { required: "Last name is required" })}
+                type="text"
+                placeholder="Enter last name"
+                className={errors.lastName ? fieldErrorCls : fieldCls}
+              />
+              {errors.lastName && (
+                <p className="text-red-400 text-[10px] font-medium mt-0.5">{errors.lastName.message}</p>
+              )}
             </div>
           </div>
 
           {/* Email + Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Email</label>
-              <input {...register("email")} type="email" placeholder="Enter email" className={fieldCls} />
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Email <span className="text-red-400">*</span></label>
+              <input
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: "Enter a valid email address" },
+                })}
+                type="email"
+                placeholder="Enter email"
+                className={errors.email ? fieldErrorCls : fieldCls}
+              />
+              {errors.email && (
+                <p className="text-red-400 text-[10px] font-medium mt-0.5">{errors.email.message}</p>
+              )}
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Phone</label>
-              <input {...register("phone")} type="tel" placeholder="Enter phone number" className={fieldCls} />
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Phone <span className="text-red-400">*</span></label>
+              <input
+                {...register("phone", {
+                  required: "Phone number is required",
+                  pattern: { value: /^[0-9+\-\s]{7,15}$/, message: "Enter a valid phone number" },
+                })}
+                type="tel"
+                placeholder="Enter phone number"
+                className={errors.phone ? fieldErrorCls : fieldCls}
+              />
+              {errors.phone && (
+                <p className="text-red-400 text-[10px] font-medium mt-0.5">{errors.phone.message}</p>
+              )}
             </div>
           </div>
 
@@ -459,7 +578,7 @@ export default function BookingModal({
 
               {/* Slots grid */}
               {!slotsLoading && !slotsError && slots.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3 max-h-[210px] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[285px] overflow-y-auto">
                   {slots.map((slot) => {
                     const isSelected = selectedSlot?.startTime === slot.startTime;
                     return (
@@ -501,7 +620,7 @@ export default function BookingModal({
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-4 border-t border-white/8 gap-4">
-            <button type="button" onClick={onClose}
+            <button type="button" onClick={handleClose}
               className="px-6 py-2.5 rounded-xl border border-white/10 text-white/70 hover:bg-white/5 hover:text-white transition text-xs font-bold uppercase tracking-wider">
               Cancel
             </button>
@@ -567,9 +686,9 @@ function SlotButton({
       <button
         type="button"
         disabled
-        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-red-950/20 border-red-500/30 text-red-400 cursor-not-allowed text-center"
+        className="h-11 py-1 px-1.5 text-[10px] sm:text-[11px] font-bold rounded-xl border bg-red-950/20 border-red-500/30 text-red-400 cursor-not-allowed text-center flex flex-col items-center justify-center whitespace-nowrap"
       >
-        <div className="font-bold">{slot.display}</div>
+        <div className="font-semibold text-[10px] sm:text-[11px] leading-none">{slot.display}</div>
         <div className="text-[8px] opacity-70 uppercase tracking-widest mt-0.5">Booked</div>
       </button>
     );
@@ -580,9 +699,9 @@ function SlotButton({
       <button
         type="button"
         onClick={onClick}
-        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-gray-900/60 border-gray-700/40 text-gray-400 hover:border-gray-500 transition text-center"
+        className="h-11 py-1 px-1.5 text-[10px] sm:text-[11px] font-bold rounded-xl border bg-gray-900/60 border-gray-700/40 text-gray-400 hover:border-gray-500 transition text-center flex flex-col items-center justify-center cursor-pointer whitespace-nowrap"
       >
-        <div className="font-bold">{slot.display}</div>
+        <div className="font-semibold text-[10px] sm:text-[11px] leading-none">{slot.display}</div>
         <div className="text-[8px] opacity-70 uppercase tracking-widest mt-0.5">Locked</div>
       </button>
     );
@@ -593,9 +712,9 @@ function SlotButton({
       <button
         type="button"
         onClick={onClick}
-        className="py-2.5 px-1.5 text-[10px] font-bold rounded-lg border bg-amber-950/20 border-amber-500/40 text-amber-300 hover:border-amber-500 transition text-center"
+        className="h-11 py-1 px-1.5 text-[10px] sm:text-[11px] font-bold rounded-xl border bg-amber-950/20 border-amber-500/40 text-amber-300 hover:border-amber-500 transition text-center flex flex-col items-center justify-center cursor-pointer whitespace-nowrap"
       >
-        <div className="font-bold">{slot.display}</div>
+        <div className="font-semibold text-[10px] sm:text-[11px] leading-none">{slot.display}</div>
         <div className="text-[8px] uppercase tracking-wider mt-0.5 text-amber-500/90 font-extrabold animate-pulse">
           Pending {timeLeft > 0 ? `(${formatCountdown(timeLeft)})` : ""}
         </div>
@@ -609,10 +728,10 @@ function SlotButton({
       type="button"
       onClick={onClick}
       className={`
-        py-2.5 px-1.5 text-[10px] font-bold rounded-lg transition-all border text-center leading-tight
+        h-11 py-1 px-1.5 text-[10px] sm:text-[11px] font-bold rounded-xl transition-all border text-center leading-none flex items-center justify-center cursor-pointer whitespace-nowrap
         ${isSelected
-          ? "bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] border-transparent text-white shadow-md scale-[1.04]"
-          : "bg-[#12091F] border-white/5 hover:border-[#6C04D7]/50 text-white/60"}
+          ? "bg-gradient-to-r from-[#6C04D7] to-[#CD4ECD] border-transparent text-white shadow-md scale-[1.02]"
+          : "bg-[#12091F] border-white/10 hover:border-[#6C04D7] text-white/80 hover:text-white"}
       `}
     >
       {slot.display}

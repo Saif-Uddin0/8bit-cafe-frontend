@@ -5,6 +5,7 @@ import { Clock, Truck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useCart } from "@/hooks/useCart";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import type { ApiFood } from "@/types/api";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
@@ -21,6 +22,7 @@ const PLACEHOLDER_IMAGE = "/order-btn-icon.png";
 export default function FoodDetails({ food }: Props) {
   const [qty, setQty] = useState(1);
   const { addItemAsync } = useCart();
+  const { requireAuth } = useRequireAuth();
 
   const imageUrl = food.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
   // ── Exact backend field names ──────────────────────────────────────────
@@ -29,19 +31,21 @@ export default function FoodDetails({ food }: Props) {
   const displayPrice = hasDiscount ? food.discountPrice : food.price;
   const totalPrice = displayPrice * qty;
 
-  const handleAddToCart = async () => {
-    try {
-      await addItemAsync(food.id, qty);
-      toast.success(`${qty} × ${food.name} added to cart!`, {
-        theme: "dark",
-        autoClose: 2000,
-      });
-    } catch {
-      toast.error(`Failed to add ${food.name} to cart. Please try again.`, {
-        theme: "dark",
-        autoClose: 3000,
-      });
-    }
+  const handleAddToCart = () => {
+    requireAuth(async () => {
+      try {
+        await addItemAsync(food.id, qty);
+        toast.success(`${qty} × ${food.name} added to cart!`, {
+          theme: "dark",
+          autoClose: 2000,
+        });
+      } catch {
+        toast.error(`Failed to add ${food.name} to cart. Please try again.`, {
+          theme: "dark",
+          autoClose: 3000,
+        });
+      }
+    });
   };
 
   return (

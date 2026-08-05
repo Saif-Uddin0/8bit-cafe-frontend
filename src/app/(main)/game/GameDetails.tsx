@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -12,6 +12,7 @@ import "swiper/css/pagination";
 import type { ApiGame } from "@/types/api";
 import BookingModal, { type BookingFormData } from "@/components/home/game-services/BookingModal";
 import BookingSummaryModal from "@/components/home/game-services/BookingSummaryModal";
+import { loadPendingBooking, type PendingBookingData } from "@/utils/pendingBooking";
 
 interface Props {
   game: ApiGame;
@@ -24,6 +25,16 @@ export default function GameDetails({ game }: Props) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
+  const [pendingData, setPendingData] = useState<PendingBookingData | null>(null);
+
+  // Auto-open booking modal if returning from login with saved booking data
+  useEffect(() => {
+    const pending = loadPendingBooking();
+    if (pending?.openModal) {
+      setPendingData(pending);
+      setBookingOpen(true);
+    }
+  }, []);
 
   const discountPct = game.disCountParcenTage ?? 0;
   const hasDiscount = game.isDiscount === true && discountPct > 0;
@@ -35,6 +46,7 @@ export default function GameDetails({ game }: Props) {
     setBookingData(data);
     setBookingOpen(false);
     setSummaryOpen(true);
+    setPendingData(null);
   };
 
   const handlePaid = () => {
@@ -218,7 +230,8 @@ export default function GameDetails({ game }: Props) {
         <BookingModal
           isOpen={bookingOpen}
           initialServiceId={game.id}
-          onClose={() => setBookingOpen(false)}
+          initialData={pendingData ?? undefined}
+          onClose={() => { setBookingOpen(false); setPendingData(null); }}
           onConfirm={handleBookingConfirm}
         />
       )}
