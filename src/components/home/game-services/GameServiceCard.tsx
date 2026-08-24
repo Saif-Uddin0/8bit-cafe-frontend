@@ -9,7 +9,7 @@ interface GameServiceCardProps {
   service: ApiGame;
   /** When true, card gets the "focused" look (taller, fully lit, coloured border) */
   isCenter?: boolean;
-  onBook: (serviceId: string) => void;
+  onBook: (service: ApiGame) => void;
 }
 
 const PLACEHOLDER_IMAGE = "/banner-2.png";
@@ -36,17 +36,18 @@ export default function GameServiceCard({
   return (
     <div
       onClick={() => router.push(`/games/${service.id}`)}
+      style={{ fontFamily: "var(--font-jersey-20)" }}
       className={`
-        relative w-full rounded-[24px] overflow-hidden border cursor-pointer
+        relative w-full rounded-[12px] overflow-hidden border cursor-pointer
         transition-all duration-500 ease-out select-none
  
         /* Mobile baseline – always full-width inside its slide */
-        h-[370px] sm:h-[400px]
+        h-[380px] sm:h-[400px]
  
-        /* Focused (center) card */
+        /* Focused (center) card vs Inactive card styling */
         ${isCenter
-          ? "lg:h-[460px] opacity-100 border-[#CD4ECD] shadow-[0_12px_48px_rgba(108,4,215,0.45)] scale-[1.0]"
-          : "lg:h-[400px] opacity-50 border-white/8 shadow-[0_4px_20px_rgba(0,0,0,0.35)] scale-[0.97] blur-[0.3px]"}
+          ? "lg:h-[460px] opacity-100 border-[#CD4ECD] shadow-[0_0_24px_rgba(205,78,205,0.3)] scale-[1.0]"
+          : "lg:h-[400px] opacity-[0.93] border-white/10 hover:border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.35)] scale-[0.97]"}
       `}
     >
       {/* ── Discount badge (top-left) ── */}
@@ -67,59 +68,122 @@ export default function GameServiceCard({
           className="object-cover"
           sizes="(max-width: 640px) 90vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A061A] via-[#0A061A]/65 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/10" />
       </div>
- 
+
       {/* Bottom-pinned content */}
-      <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 z-10 flex flex-col">
-        <span className="text-[10px] sm:text-xs uppercase text-[#CD4ECD] font-bold tracking-wider mb-1">
-          {service.category?.name ?? "Gaming"}
-        </span>
-        <h3 className="text-base sm:text-lg font-bold text-white mb-2 leading-tight">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col bg-gradient-to-b from-[#271152]/80 to-[#9C3C9C]/60 backdrop-blur-[4px] border-t border-white/10  px-4 pt-2 pb-4 sm:p-5">
+          <div className="mb-1.5">
+          <span
+            className="
+              text-[13px]
+              uppercase
+              tracking-[0.16em]
+              text-[#CD4ECD]
+              font-semibold
+            "
+          >
+            {service.category?.name ?? "Gaming"}
+          </span>
+        </div>
+        {/* Game name */}
+        <h3
+          title={service.name}
+          className="
+            text-[18px]
+            sm:text-[20px]
+            leading-tight
+            text-white
+            font-normal
+            mb-2
+            line-clamp-2
+          "
+        >
           {service.name}
         </h3>
- 
-        <div className="space-y-0.5 mb-3 text-[12px] sm:text-sm text-white/60">
-          <p>Duration: <span className="text-white/80">30 / 60 Min</span></p>
+
+        {/* Prices side-by-side */}
+        <div className="flex items-center gap-6 mb-4">
           {/* 30 min price */}
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-white/40 uppercase font-bold">30m</span>
-            <span className="text-[#F862C9] font-bold text-sm sm:text-base">
-              ৳{discountPrice30.toFixed(0)}
-            </span>
-            {hasDiscount && (
-              <span className="text-white/35 text-xs line-through">৳{service.price30Min}</span>
-            )}
+          <div className="flex flex-col">
+            <span className="text-[12px] sm:text-sm text-white  font-normal tracking-wide mb-0.5">30 Minute</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-white font-normal text-base sm:text-2xl leading-none">
+                {discountPrice30.toFixed(0)} Tk
+              </span>
+              {hasDiscount && (
+                <span className="text-white/50 text-[12px] sm:text-xs line-through ml-1">
+                  {service.price30Min}
+                </span>
+              )}
+            </div>
           </div>
+
           {/* 60 min price */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-white/40 uppercase font-bold">60m</span>
-            <span className="text-[#F862C9] font-bold text-sm sm:text-base">
-              ৳{discountPrice60.toFixed(0)}
-            </span>
-            {hasDiscount && (
-              <span className="text-white/35 text-xs line-through">৳{service.price60Min}</span>
-            )}
+          <div className="flex flex-col">
+            <span className="text-[11px] sm:text-xs text-white font-normal tracking-wide mb-0.5">60 Minute</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-white font-normal text-base sm:text-2xl leading-none">
+                ৳{discountPrice60.toFixed(0)} Tk
+              </span>
+              {hasDiscount && (
+                <span className="text-white/50 text-[12px] sm:text-xs line-through ml-1">
+                  ৳{service.price60Min}
+                </span>
+              )}
+            </div>
           </div>
         </div>
- 
+
+        {/* Book button */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onBook(service.id);
+            onBook(service);
           }}
           className="
-            w-full flex items-center justify-center gap-1.5
-            bg-[#F5ECFC] text-[#0A061A]
-            text-[10px] sm:text-xs font-bold uppercase tracking-wider
-            py-3 sm:py-2.5 px-3 rounded-xl
-            hover:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]
-            active:scale-95 transition-all duration-200
+            mx-auto
+            w-[92%]
+            min-h-[42px]
+            flex items-center justify-center
+            gap-2
+            rounded-[11px]
+            bg-[#FDF7FD]
+            px-4
+            py-2
+
+            transition-all duration-200
+
+            hover:bg-white
+            hover:shadow-[0_0_18px_rgba(253,247,253,0.35)]
+            active:scale-[0.98]
           "
         >
-          <Gamepad2 size={13} />
-          Book Gaming Session
+          <Gamepad2
+            size={18}
+            strokeWidth={2}
+            className="text-[#6C04D7] shrink-0"
+          />
+
+          <span
+            className="
+              bg-gradient-to-r
+              from-[#6C04D7]
+              to-[#CD4ECD]
+              bg-clip-text
+              text-transparent
+
+              text-[16px]
+              sm:text-[18px]
+              font-normal
+              uppercase
+              tracking-wide
+              leading-none
+            "
+          >
+            Book Gaming Session
+          </span>
         </button>
       </div>
     </div>

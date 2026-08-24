@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { X, Gamepad2, ChevronLeft, ChevronRight, Loader2, CalendarX } from "lucide-react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGames } from "@/hooks/useGames";
 import { useAvailableSlots } from "@/hooks/useAvailableSlots";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ApiGame, ApiAvailableSlot } from "@/types/api";
@@ -131,7 +130,6 @@ export interface BookingFormData {
 }
 
 interface FormFields {
-  serviceId: string;
   duration: string;
   firstName: string;
   lastName: string;
@@ -141,7 +139,8 @@ interface FormFields {
 
 interface BookingModalProps {
   isOpen: boolean;
-  initialServiceId?: string;
+  /** The specific game the user clicked — shown as read-only, slots loaded for this game only */
+  initialGame?: ApiGame;
   /** Pending booking data restored from sessionStorage after login redirect */
   initialData?: PendingBookingData;
   onClose: () => void;
@@ -186,7 +185,7 @@ function formatCountdown(secs: number): string {
 
 export default function BookingModal({
   isOpen,
-  initialServiceId = "",
+  initialGame,
   initialData,
   onClose,
   onConfirm,
@@ -195,15 +194,15 @@ export default function BookingModal({
   const router = useRouter();
   const pathname = usePathname();
   const { profile, user } = useAuth();
-  const { data: gamesList } = useGames();
-  const games = gamesList ?? [];
+
+  // ── The game is passed directly — no need to fetch the full list ──────────
+  const selectedGame = initialGame ?? null;
 
   // Tracks whether we have already attempted to restore the saved slot
   const hasRestoredSlot = useRef(false);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormFields>({
     defaultValues: {
-      serviceId: initialServiceId || games[0]?.id || "",
       duration: "30 Minutes",
       firstName: "",
       lastName: "",
@@ -218,12 +217,15 @@ export default function BookingModal({
   const [slotInfoOpen, setSlotInfoOpen] = useState(false);
   const [clickedSlotInfo, setClickedSlotInfo] = useState<ApiAvailableSlot | null>(null);
 
-  const watchedServiceId = watch("serviceId");
   const watchedDuration = watch("duration");
   const durationMin = durationToMin(watchedDuration);
 
-  // Dynamic Pricing Calculation
-  const selectedGame = games.find((g) => g.id === watchedServiceId);
+  // Stable callback so SlotButton's useEffect doesn't re-fire on every render
+  const handleSlotExpire = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
+  }, [queryClient]);
+
+  // ── Pricing — derived directly from the passed-in game ───────────────────
   const originalPrice = selectedGame
     ? (watchedDuration === "30 Minutes" ? selectedGame.price30Min : selectedGame.price60Min)
     : 0;
@@ -231,13 +233,12 @@ export default function BookingModal({
   const hasDiscount = selectedGame?.isDiscount === true && discountPct > 0;
   const discountPrice = hasDiscount ? originalPrice - (originalPrice * discountPct / 100) : originalPrice;
 
-  // Fetch available slots from backend 
   const {
     data: slots = [],
     isLoading: slotsLoading,
     isError: slotsError,
   } = useAvailableSlots({
-    gameId: watchedServiceId,
+    gameId: selectedGame?.id ?? "",
     date: selectedDate,
     durationMin,
   });
@@ -256,9 +257,10 @@ export default function BookingModal({
         if (savedSlot) {
           setSelectedSlot(savedSlot);
         } else {
-          toast.warn(
+          notify.warning(
+            "Slot Unavailable",
             "Your previously selected time slot is no longer available. Please choose another.",
-            { theme: "dark", autoClose: 5000, position: "top-right" }
+            5000
           );
           const firstAvail = slots.find((s) => s.status === "AVAILABLE");
           setSelectedSlot(firstAvail || null);
@@ -273,14 +275,8 @@ export default function BookingModal({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slots]);
 
-  // Sync initial service id / games list
-  useEffect(() => {
-    if (initialServiceId) {
-      setValue("serviceId", initialServiceId);
-    } else if (games.length > 0) {
-      setValue("serviceId", games[0].id);
-    }
-  }, [initialServiceId, games, setValue]);
+  // Sync initial game id when the passed-in game changes
+  // (not needed for serviceId anymore — kept for duration restore only)
 
   // Autofill user profile when logged in
   // Handles both camelCase and snake_case field variants the backend may return
@@ -303,7 +299,6 @@ export default function BookingModal({
   // Profile effect runs afterwards and will correctly override email/phone.
   useEffect(() => {
     if (!initialData) return;
-    if (initialData.gameId) setValue("serviceId", initialData.gameId);
     if (initialData.duration) setValue("duration", initialData.duration);
     if (initialData.firstName) setValue("firstName", initialData.firstName);
     if (initialData.lastName) setValue("lastName", initialData.lastName);
@@ -316,47 +311,50 @@ export default function BookingModal({
 
   if (!isOpen) return null;
 
-  /** Clears any pending booking state and calls the parent's onClose */
   const handleClose = () => {
     clearPendingBooking();
     onClose();
   };
 
-  const handleServiceChange = (id: string) => {
-    setValue("serviceId", id);
-  };
-
   const onSubmit = (fields: FormFields) => {
     if (!consent) {
-      toast.error("Please agree to the consent checkbox to proceed.", {
-        position: "top-right", autoClose: 4000, theme: "dark",
-      });
+      notify.error(
+        "Consent Required",
+        "Please agree to the consent checkbox to proceed.",
+        4000
+      );
       return;
     }
     if (!selectedDate) {
-      toast.error("Please select a preferred date.", {
-        position: "top-right", autoClose: 4000, theme: "dark",
-      });
+      notify.error(
+        "Date Required",
+        "Please select a preferred date.",
+        4000
+      );
       return;
     }
     if (!selectedSlot) {
-      toast.error("Please select an available time slot.", {
-        position: "top-right", autoClose: 4000, theme: "dark",
-      });
+      notify.error(
+        "Time Slot Required",
+        "Please select an available time slot.",
+        4000
+      );
       return;
     }
-    const service = games.find((s) => s.id === fields.serviceId);
+    const service = selectedGame;
     if (!service) {
-      toast.error("Please select a valid service.", {
-        position: "top-right", autoClose: 4000, theme: "dark",
-      });
+      notify.error(
+        "No Game Selected",
+        "No game selected. Please close and try again.",
+        4000
+      );
       return;
     }
 
     // ── Auth gate ── save form to sessionStorage and redirect to login
     if (!user) {
       savePendingBooking({
-        gameId: fields.serviceId,
+        gameId: selectedGame?.id ?? "",
         duration: fields.duration,
         firstName: fields.firstName,
         lastName: fields.lastName,
@@ -366,9 +364,10 @@ export default function BookingModal({
         selectedSlotStartTime: selectedSlot.startTime,
         openModal: true,
       });
-      toast.info(
+      notify.info(
+        "Sign In Required",
         "Please sign in to continue. Your booking details have been saved.",
-        { theme: "dark", autoClose: 3500, position: "top-right" }
+        3500
       );
       setTimeout(() => {
         router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
@@ -419,17 +418,16 @@ export default function BookingModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* Service + Duration */}
+          {/* Service Name — read-only, shows the specific game clicked */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Service Name</label>
-              <select
-                value={watchedServiceId}
-                onChange={(e) => handleServiceChange(e.target.value)}
-                className={fieldCls}
+              <div
+                className="w-full bg-[#0A061A] border border-[#6C04D7]/40 rounded-xl px-4 py-3 text-sm text-white flex items-center gap-2"
               >
-                {games.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
+                <Gamepad2 size={14} className="text-[#CD4ECD] shrink-0" />
+                <span className="truncate">{selectedGame?.name ?? "—"}</span>
+              </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Duration</label>
@@ -594,9 +592,7 @@ export default function BookingModal({
                             setSlotInfoOpen(true);
                           }
                         }}
-                        onExpire={() => {
-                          queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
-                        }}
+                        onExpire={handleSlotExpire}
                       />
                     );
                   })}
@@ -641,9 +637,7 @@ export default function BookingModal({
           setSlotInfoOpen(false);
           setClickedSlotInfo(null);
         }}
-        onExpire={() => {
-          queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
-        }}
+        onExpire={handleSlotExpire}
       />
     </div>
   );

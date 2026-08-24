@@ -35,7 +35,9 @@ export function useAvailableSlots({ gameId, date, durationMin }: UseAvailableSlo
     queryKey: ["availableSlots", gameId, date?.toDateString(), durationMin],
     queryFn: () => fetchAvailableSlots(gameId, date!, durationMin),
     enabled: !!gameId && !!date && !!durationMin,
-    staleTime: 1000 * 30, // 30s — slots change frequently
-    gcTime: 1000 * 60,
+    staleTime: 1000 * 60,      // 60 s — manual invalidate on slot expire handles freshness
+    gcTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false, // don't re-hit the API every time user alt-tabs
   });
 }
+

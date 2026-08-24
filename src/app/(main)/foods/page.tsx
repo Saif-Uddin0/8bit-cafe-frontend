@@ -140,7 +140,7 @@ function FoodsPageContent() {
 
         {/* Skeleton loading */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <FoodCardSkeleton key={i} />
             ))}
@@ -167,7 +167,7 @@ function FoodsPageContent() {
 
         {/* Food grid */}
         {!isLoading && !isError && filteredFoods.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {filteredFoods.map((item) => (
               <FoodCard key={item.id} item={item} />
             ))}

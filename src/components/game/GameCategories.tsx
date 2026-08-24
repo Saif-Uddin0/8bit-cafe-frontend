@@ -327,7 +327,7 @@ export default function GameCategories({ activeCategory, onSelectCategory }: Gam
         <div
           ref={outerRef}
           className={[
-            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 relative",
+            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 relative overflow-hidden",
             isCentering ? "mx-auto max-w-full" : "w-full",
           ].join(" ")}
           style={{

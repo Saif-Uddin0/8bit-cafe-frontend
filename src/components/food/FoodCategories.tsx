@@ -377,28 +377,41 @@ export default function FoodCategories({
         <div
           ref={outerRef}
           className={[
-            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 lg:py-9 relative",
-            isCentering ? "mx-auto max-w-full" : "w-full",
+            "rounded-[24px] sm:rounded-[32px] py-5 sm:py-7 lg:py-9 relative overflow-hidden",
+            isCentering ? "mx-auto max-w-full w-fit" : "w-full",
           ].join(" ")}
           style={{
             background: "linear-gradient(135deg, #7B12E0 0%, #A530D8 45%, #CD4ECD 100%)",
             boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+            transform: "translateZ(0)",
           }}
         >
           {/* Edge fades — only meaningful in carousel mode */}
           {!isCentering && (
             <>
+              {/* Left fade — solid zone matches the generous left padding */}
               <div
                 aria-hidden="true"
-                className={`absolute left-0 top-0 bottom-0 w-8 sm:w-12 z-20 pointer-events-none bg-gradient-to-r from-[#7B12E0] to-transparent transition-opacity duration-300 ${
-                  showLeftFade ? "opacity-75" : "opacity-0"
+                className={`absolute left-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${
+                  showLeftFade ? "opacity-100" : "opacity-0"
                 }`}
+                style={{
+                  width: "clamp(56px, 8vw, 100px)",
+                  background:
+                    "linear-gradient(to right, #7B12E0 0%, #7B12E0 40%, transparent 100%)",
+                }}
               />
+              {/* Right fade — solid zone matches the generous right padding */}
               <div
                 aria-hidden="true"
-                className={`absolute right-0 top-0 bottom-0 w-8 sm:w-12 z-20 pointer-events-none bg-gradient-to-l from-[#CD4ECD] to-transparent transition-opacity duration-300 ${
-                  showRightFade ? "opacity-75" : "opacity-0"
+                className={`absolute right-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${
+                  showRightFade ? "opacity-100" : "opacity-0"
                 }`}
+                style={{
+                  width: "clamp(56px, 8vw, 100px)",
+                  background:
+                    "linear-gradient(to left, #CD4ECD 0%, #CD4ECD 40%, transparent 100%)",
+                }}
               />
             </>
           )}
@@ -410,16 +423,18 @@ export default function FoodCategories({
             onMouseUp={handleMouseUpOrLeave}
             onMouseLeave={handleMouseUpOrLeave}
             className={[
-              "py-1 px-6 sm:px-10 lg:px-12 scrollbar-none scroll-smooth select-none",
+              "scrollbar-none scroll-smooth select-none",
               isCentering
-                // Centered mode: no overflow, items visually centered
-                ? "flex flex-row flex-wrap justify-center gap-6 sm:gap-8"
-                // Carousel mode: horizontal scroll + snap
-                : "w-full overflow-x-auto flex flex-row gap-6 sm:gap-8 snap-x snap-mandatory",
+                // Centered mode: generous symmetric padding so orbs breathe
+                ? "flex flex-row flex-wrap justify-center gap-6 sm:gap-8 px-10 sm:px-14 lg:px-16 py-3 sm:py-4"
+                // Carousel mode: same generous padding on both ends
+                : "w-full overflow-x-auto flex flex-row gap-6 sm:gap-8 snap-x snap-mandatory px-10 sm:px-14 lg:px-16 py-3 sm:py-4",
             ].join(" ")}
             style={{
               WebkitOverflowScrolling: "touch",
               cursor: isCentering ? "default" : isDragging ? "grabbing" : "grab",
+              // Tell the browser the snap boundary starts after the left padding
+              scrollPaddingInline: !isCentering ? "clamp(40px, 5vw, 64px)" : undefined,
             }}
           >
             {isLoading

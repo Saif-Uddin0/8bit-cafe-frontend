@@ -365,3 +365,81 @@ html {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+/* ============================================================
+   Premium Toast Overrides — 8bit Café
+   ============================================================ */
+
+.Toastify__toast {
+  margin-bottom: 8px !important;
+  min-height: 0 !important;
+}
+
+/* Slide-up entrance on mobile, slide-down on desktop */
+.Toastify__slide-enter--top-right {
+  animation: toastSlideInRight 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+.Toastify__slide-exit--top-right {
+  animation: toastSlideOutRight 0.25s ease-in forwards;
+}
+
+@keyframes toastSlideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes toastSlideOutRight {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(110%); opacity: 0; }
+}
+
+/* Bottom-center on mobile — more natural for thumbs */
+@media (max-width: 639px) {
+  .Toastify__toast-container--top-right {
+    top: auto !important;
+    bottom: 80px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+
+  .Toastify__slide-enter--top-right {
+    animation: toastSlideInUp 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+  }
+  .Toastify__slide-exit--top-right {
+    animation: toastSlideOutDown 0.25s ease-in forwards;
+  }
+
+  @keyframes toastSlideInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes toastSlideOutDown {
+    from { transform: translateY(0);    opacity: 1; }
+    to   { transform: translateY(20px); opacity: 0; }
+  }
+}
+
+/* Progress bar track */
+.Toastify__progress-bar {
+  bottom: 0;
+  height: 2px !important;
+  border-radius: 0 0 16px 16px !important;
+}
+.Toastify__progress-bar--success {
+  background: #00C896 !important;
+}
+.Toastify__progress-bar--error {
+  background: #FF4D6D !important;
+}
+.Toastify__progress-bar--info {
+  background: #7E00FF !important;
+}
+.Toastify__progress-bar--warning {
+  background: #FFB300 !important;
+}
+
+/* Close button — hide since we set closeButton: false globally */
+.Toastify__close-button {
+  display: none !important;
+}

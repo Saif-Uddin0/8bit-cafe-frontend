@@ -13,6 +13,7 @@ import GameServiceCard from "@/components/home/game-services/GameServiceCard";
 import BookingModal, { type BookingFormData } from "@/components/home/game-services/BookingModal";
 import BookingSummaryModal from "@/components/home/game-services/BookingSummaryModal";
 import { useGames } from "@/hooks/useGames";
+import type { ApiGame } from "@/types/api";
 
 const ARROW_BTN =
   "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full " +
@@ -43,7 +44,7 @@ export default function GameServicesSection() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
-  const [selectedSvcId, setSelectedSvcId] = useState<string>("");
+  const [selectedGame, setSelectedGame] = useState<ApiGame | null>(null);
 
   const { data: gamesList, isLoading } = useGames();
 
@@ -79,7 +80,7 @@ export default function GameServicesSection() {
     swiper.navigation.update();
   }, []);
 
-  const handleOpenBooking = (id: string) => { setSelectedSvcId(id); setBookingOpen(true); };
+  const handleOpenBooking = (game: ApiGame) => { setSelectedGame(game); setBookingOpen(true); };
   const handleBookingConfirm = (data: BookingFormData) => { setBookingData(data); setBookingOpen(false); setSummaryOpen(true); };
   const handlePaid = () => { setSummaryOpen(false); setBookingData(null); };
 
@@ -247,7 +248,7 @@ export default function GameServicesSection() {
       {bookingOpen && (
         <BookingModal
           isOpen={bookingOpen}
-          initialServiceId={selectedSvcId}
+          initialGame={selectedGame ?? undefined}
           onClose={() => setBookingOpen(false)}
           onConfirm={handleBookingConfirm}
         />

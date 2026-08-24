@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMyBookings } from "@/hooks/useMyBookings";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
   Gamepad2,
@@ -218,7 +218,7 @@ function BookingCard({ booking }: { booking: ApiBooking }) {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
       const msg = err.response?.data?.message || err.message || "Payment initialization failed.";
-      toast.error(`❌ ${msg}`, { position: "top-right", autoClose: 5000, theme: "dark" });
+      notify.error("Payment Failed", msg, 5000);
       setIsPaying(false);
     }
   };

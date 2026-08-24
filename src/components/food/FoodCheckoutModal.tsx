@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, ShoppingBag, Loader2 } from "lucide-react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import { useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import type { ApiCartItem } from "@/types/api";
@@ -111,11 +111,7 @@ export default function FoodCheckoutModal({
         err.response?.data?.message ||
         err.message ||
         "Something went wrong. Please try again.";
-      toast.error(`❌ ${errMsg}`, {
-        position: "top-right",
-        autoClose: 5000,
-        theme: "dark",
-      });
+      notify.error("Checkout Failed", errMsg, 5000);
       setIsSubmitting(false);
     }
   };

@@ -8,6 +8,7 @@ import BookingModal, { type BookingFormData } from "@/components/home/game-servi
 import BookingSummaryModal from "@/components/home/game-services/BookingSummaryModal";
 import { useGames } from "@/hooks/useGames";
 import { loadPendingBooking, type PendingBookingData } from "@/utils/pendingBooking";
+import type { ApiGame } from "@/types/api";
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 function GameCardSkeleton() {
@@ -38,7 +39,7 @@ function GamesPageContent() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
-  const [selectedGameId, setSelectedGameId] = useState<string>("");
+  const [selectedGame, setSelectedGame] = useState<ApiGame | null>(null);
   const [pendingData, setPendingData] = useState<PendingBookingData | null>(null);
 
   const { data: gamesList, isLoading, isError } = useGames();
@@ -48,7 +49,10 @@ function GamesPageContent() {
   useEffect(() => {
     const pending = loadPendingBooking();
     if (pending?.openModal) {
-      setSelectedGameId(pending.gameId);
+      // When restoring from login redirect we only have the gameId.
+      // Find the game object from the already-loaded list.
+      const restoredGame = allGames.find((g) => g.id === pending.gameId) ?? null;
+      setSelectedGame(restoredGame);
       setPendingData(pending);
       setBookingOpen(true);
     }
@@ -65,8 +69,8 @@ function GamesPageContent() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleBook = (gameId: string) => {
-    setSelectedGameId(gameId);
+  const handleBook = (game: ApiGame) => {
+    setSelectedGame(game);
     setBookingOpen(true);
   };
 
@@ -177,7 +181,7 @@ function GamesPageContent() {
       {bookingOpen && (
         <BookingModal
           isOpen={bookingOpen}
-          initialServiceId={selectedGameId}
+          initialGame={selectedGame ?? undefined}
           initialData={pendingData ?? undefined}
           onClose={() => { setBookingOpen(false); setPendingData(null); }}
           onConfirm={handleBookingConfirm}

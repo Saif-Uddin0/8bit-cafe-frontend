@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 
 function getSafeRedirectUrl(paramUrl: string | null): string {
   if (!paramUrl) return "/";
@@ -45,7 +45,7 @@ function LoginPageContent() {
       });
 
       login(res.data);
-      toast.success("Login Successful!");
+      notify.success("Welcome Back!", "Login Successful!");
       router.push(redirectTarget);
     } catch (error: any) {
       console.error("Login error details:", {
@@ -58,7 +58,7 @@ function LoginPageContent() {
         error.response?.data?.error ||
         error.message ||
         "Something went wrong!";
-      toast.error(errMsg);
+      notify.error("Login Failed", errMsg);
     } finally {
       setLoading(false);
     }

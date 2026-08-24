@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 
 /**
  * Custom hook to guard interactive actions (e.g., Book Now, Checkout, Add to Cart).
@@ -23,11 +23,10 @@ export function useRequireAuth() {
       } else {
         const searchStr = searchParams.toString();
         const currentUrl = searchStr ? `${pathname}?${searchStr}` : pathname;
-        toast.info("Please sign in to continue. Redirecting you to login…", {
-          theme: "dark",
-          autoClose: 3000,
-          position: "top-right",
-        });
+        notify.info(
+          "Sign in required",
+          "Please sign in to continue. Taking you to login…"
+        );
         setTimeout(() => {
           router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
         }, 1200);

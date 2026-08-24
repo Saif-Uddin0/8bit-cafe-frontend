@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 
 interface SignUpFormData {
   firstName: string;
@@ -44,7 +44,7 @@ export default function SignUpPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
+      notify.error("Validation Error", "Passwords do not match!");
       return;
     }
 
@@ -63,7 +63,7 @@ export default function SignUpPage() {
         },
       });
 
-      toast.success(res.data?.message || "Registration successfully!");
+      notify.success("Account Created", res.data?.message || "Registration successfully!");
       router.push("/login");
     } catch (error: any) {
       console.error("Signup error details:", {
@@ -84,7 +84,7 @@ export default function SignUpPage() {
         responseData?.error ||
         error.message ||
         "Something went wrong!";
-      toast.error(errMsg);
+      notify.error("Registration Failed", errMsg);
     } finally {
       setLoading(false);
     }

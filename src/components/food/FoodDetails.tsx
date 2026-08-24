@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Clock, Truck } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import { useCart } from "@/hooks/useCart";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import type { ApiFood } from "@/types/api";
@@ -35,15 +35,15 @@ export default function FoodDetails({ food }: Props) {
     requireAuth(async () => {
       try {
         await addItemAsync(food.id, qty);
-        toast.success(`${qty} × ${food.name} added to cart!`, {
-          theme: "dark",
-          autoClose: 2000,
-        });
+        notify.success(
+          `🛒 Added to cart!`,
+          `${qty} × ${food.name} added successfully.`
+        );
       } catch {
-        toast.error(`Failed to add ${food.name} to cart. Please try again.`, {
-          theme: "dark",
-          autoClose: 3000,
-        });
+        notify.error(
+          "Couldn’t add item",
+          `Failed to add ${food.name}. Please try again.`
+        );
       }
     });
   };

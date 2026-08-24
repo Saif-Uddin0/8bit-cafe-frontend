@@ -5,7 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import FoodCheckoutModal from "@/components/food/FoodCheckoutModal";
 
 export default function CartDrawer() {
@@ -43,7 +43,7 @@ export default function CartDrawer() {
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      toast.info("Your cart is empty! Add some delicious food first.", { theme: "dark" });
+      notify.info("Cart is Empty", "Your cart is empty! Add some delicious food first.");
       return;
     }
     setIsSummaryOpen(true);
@@ -53,7 +53,7 @@ export default function CartDrawer() {
     try {
       await updateQuantityAsync(itemId, "increment");
     } catch {
-      toast.error("Failed to update cart quantity.", { theme: "dark", autoClose: 2500 });
+      notify.error("Cart Update Failed", "Failed to update cart quantity.", 2500);
     }
   };
 
@@ -63,7 +63,7 @@ export default function CartDrawer() {
         await updateQuantityAsync(itemId, "decrement");
       }
     } catch {
-      toast.error("Failed to update cart quantity.", { theme: "dark", autoClose: 2500 });
+      notify.error("Cart Update Failed", "Failed to update cart quantity.", 2500);
     }
   };
 
@@ -73,7 +73,7 @@ export default function CartDrawer() {
     try {
       await removeItemAsync(itemId);
     } catch {
-      toast.error("Failed to remove item from cart.", { theme: "dark", autoClose: 2500 });
+      notify.error("Cart Update Failed", "Failed to remove item from cart.", 2500);
     } finally {
       setInFlightItemIds((prev) => {
         const next = new Set(prev);

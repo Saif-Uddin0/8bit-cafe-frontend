@@ -241,6 +241,22 @@ export interface ApiCartAddResponse {
   message: string;
 }
 
+// ─── Banners ─────────────────────────────────────────────────────────────────
+// GET /banners/all
+export interface ApiBanner {
+  id: string;
+  image: string; // Cloudinary URL
+}
 
-
+export interface ApiBannersResponse {
+  data: ApiBanner[];
+  success: boolean;
+  message: string;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
 

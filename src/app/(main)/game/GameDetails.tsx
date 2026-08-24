@@ -229,7 +229,7 @@ export default function GameDetails({ game }: Props) {
       {bookingOpen && (
         <BookingModal
           isOpen={bookingOpen}
-          initialServiceId={game.id}
+          initialGame={game}
           initialData={pendingData ?? undefined}
           onClose={() => { setBookingOpen(false); setPendingData(null); }}
           onConfirm={handleBookingConfirm}

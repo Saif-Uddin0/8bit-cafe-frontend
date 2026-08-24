@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, Gamepad2, Loader2 } from "lucide-react";
-import { toast } from "react-toastify";
+import notify from "@/lib/notify";
 import type { BookingFormData } from "@/components/home/game-services/BookingModal";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { useQueryClient } from "@tanstack/react-query";
@@ -124,11 +124,7 @@ export default function BookingSummaryModal({
       queryClient.invalidateQueries({ queryKey: ["availableSlots"] });
 
       const errMsg = error.response?.data?.message || error.message || "Slot already reserved or reservation conflict occurred.";
-      toast.error(`❌ ${errMsg}`, {
-        position: "top-right",
-        autoClose: 5000,
-        theme: "dark",
-      });
+      notify.error("Booking Failed", errMsg, 5000);
 
       // Keep summary open & re-enable button
       setIsSubmitting(false);
