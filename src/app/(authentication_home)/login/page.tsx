@@ -45,8 +45,8 @@ function LoginPageContent() {
       });
 
       login(res.data);
-      notify.success("Welcome Back!", "Login Successful!");
-      router.push(redirectTarget);
+      notify.modal.info("Welcome to 8-bit cafe", undefined, 3000);
+      setTimeout(() => router.push(redirectTarget), 1400);
     } catch (error: any) {
       console.error("Login error details:", {
         message: error.message,
@@ -58,7 +58,7 @@ function LoginPageContent() {
         error.response?.data?.error ||
         error.message ||
         "Something went wrong!";
-      notify.error("Login Failed", errMsg);
+      notify.modal.error("Log in failed", errMsg, 0, "Try again", () => {});
     } finally {
       setLoading(false);
     }

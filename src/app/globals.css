@@ -340,6 +340,7 @@ html {
   background: rgba(255, 255, 255, 0.4) !important;
   opacity: 1 !important;
 }
+
 .swiper-pagination-bullet-active {
   background: #F862C9 !important;
   box-shadow: 0 0 8px #F862C9 !important;
@@ -356,6 +357,7 @@ html {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -363,83 +365,507 @@ html {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* ============================================================
-   Premium Toast Overrides — 8bit Café
+   8bit Café — Custom Notification System
    ============================================================ */
 
-.Toastify__toast {
-  margin-bottom: 8px !important;
-  min-height: 0 !important;
-}
-
-/* Slide-up entrance on mobile, slide-down on desktop */
-.Toastify__slide-enter--top-right {
-  animation: toastSlideInRight 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
-}
-.Toastify__slide-exit--top-right {
-  animation: toastSlideOutRight 0.25s ease-in forwards;
-}
-
-@keyframes toastSlideInRight {
-  from { transform: translateX(110%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
-}
-@keyframes toastSlideOutRight {
-  from { transform: translateX(0);    opacity: 1; }
-  to   { transform: translateX(110%); opacity: 0; }
-}
-
-/* Bottom-center on mobile — more natural for thumbs */
-@media (max-width: 639px) {
-  .Toastify__toast-container--top-right {
-    top: auto !important;
-    bottom: 80px !important;
-    right: 12px !important;
-    left: 12px !important;
-    width: auto !important;
-    max-width: 100% !important;
-  }
-
-  .Toastify__slide-enter--top-right {
-    animation: toastSlideInUp 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
-  }
-  .Toastify__slide-exit--top-right {
-    animation: toastSlideOutDown 0.25s ease-in forwards;
-  }
-
-  @keyframes toastSlideInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-  @keyframes toastSlideOutDown {
-    from { transform: translateY(0);    opacity: 1; }
-    to   { transform: translateY(20px); opacity: 0; }
-  }
-}
-
-/* Progress bar track */
-.Toastify__progress-bar {
+/* ─── Pill container
+     Anchored to bottom: 0 / right: 0 with internal padding.
+     This avoids the overflow-x: hidden body clipping on some browsers.
+   ─────────────────────────────────────────────────────────── */
+.notif-pill-container {
+  position: fixed;
   bottom: 0;
-  height: 2px !important;
-  border-radius: 0 0 16px 16px !important;
-}
-.Toastify__progress-bar--success {
-  background: #00C896 !important;
-}
-.Toastify__progress-bar--error {
-  background: #FF4D6D !important;
-}
-.Toastify__progress-bar--info {
-  background: #7E00FF !important;
-}
-.Toastify__progress-bar--warning {
-  background: #FFB300 !important;
+  right: 0;
+  z-index: 9998;
+  padding: 0 20px 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+  /* Constrain to viewport width */
+  max-width: min(400px, 100vw);
+  box-sizing: border-box;
 }
 
-/* Close button — hide since we set closeButton: false globally */
-.Toastify__close-button {
-  display: none !important;
+/* ─── Each pill item ──────────────────────────────────────── */
+.notif-pill-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  cursor: pointer;
+  user-select: none;
+  /* Width: fixed on desktop, full-available on mobile */
+  width: 340px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* Animation-friendly */
+  will-change: transform, opacity;
+}
+
+/* ─── Modal overlay ──────────────────────────────────────── */
+.notif-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 1, 10, 0.72);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* ─── Modal box ──────────────────────────────────────────── */
+.notif-modal-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 28px;
+  padding: clamp(28px, 6vw, 44px) clamp(22px, 6vw, 40px);
+  box-sizing: border-box;
+  /* Prevent overflow on very small screens */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  /* Animation-friendly */
+  will-change: transform, opacity;
+  /* scrollbar hidden */
+  scrollbar-width: none;
+}
+
+.notif-modal-box::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Modal icon ─────────────────────────────────────────── */
+.notif-modal-icon {
+  width: clamp(80px, 22vw, 120px);
+  height: clamp(80px, 22vw, 120px);
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ─── Modal title ────────────────────────────────────────── */
+.notif-modal-title {
+  font-family: 'Poppins', var(--font-poppins), sans-serif;
+  font-size: clamp(18px, 4.5vw, 22px);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* ─── Modal message ──────────────────────────────────────── */
+.notif-modal-msg {
+  font-family: 'Poppins', var(--font-poppins), sans-serif;
+  font-size: clamp(11px, 2.5vw, 13px);
+  font-weight: 400;
+  color: rgba(210, 195, 255, 0.60);
+  line-height: 1.55;
+  margin: 0;
+  word-break: break-word;
+  max-width: 320px;
+}
+
+/* ─── Modal action button ────────────────────────────────── */
+.notif-modal-btn {
+  font-family: 'Poppins', var(--font-poppins), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  background: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px clamp(28px, 8vw, 52px);
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-top: 4px;
+}
+
+.notif-modal-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.45);
+}
+
+.notif-modal-btn:active {
+  transform: scale(0.97);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Welcome Banner — horizontal glassmorphism strip
+   Matches Frame 2147242989 design
+   ═══════════════════════════════════════════════════════════ */
+
+.notif-welcome-banner {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  /* Responsive width */
+  width: min(540px, calc(100vw - 32px));
+  box-sizing: border-box;
+
+  /* Glassmorphism — highly transparent */
+  background: rgba(8, 4, 22, 0.28);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+
+  /* Gradient border via box-shadow layering */
+  border: 1px solid rgba(140, 70, 255, 0.28);
+  border-radius: 100px;
+  box-shadow:
+    0 0 0 1px rgba(108, 4, 215, 0.10) inset,
+    0 0 60px rgba(108, 4, 215, 0.14),
+    0 0 120px rgba(108, 4, 215, 0.06),
+    0 24px 48px rgba(0, 0, 0, 0.52);
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 28px;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+/* Ambient glow blobs — left */
+.notif-welcome-glow-l {
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 4, 215, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Ambient glow blobs — right */
+.notif-welcome-glow-r {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Logo wrapper */
+.notif-welcome-logo-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border: 2px solid rgba(150, 80, 255, 0.45);
+  box-shadow:
+    0 0 12px rgba(108, 4, 215, 0.45),
+    0 0 30px rgba(108, 4, 215, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  /* Subtle pulse */
+  animation: notifLogoGlow 3s ease-in-out infinite;
+}
+
+@keyframes notifLogoGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(108, 4, 215, 0.45), 0 0 30px rgba(108, 4, 215, 0.18);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(139, 62, 200, 0.65), 0 0 50px rgba(108, 4, 215, 0.28);
+  }
+}
+
+/* Welcome title */
+.notif-welcome-title {
+  font-family: 'Poppins', var(--font-poppins), sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.3;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "8-bit cafe" gradient span */
+.notif-welcome-accent {
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Optional subtitle message */
+.notif-welcome-msg {
+  font-family: 'Poppins', var(--font-poppins), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(196, 175, 255, 0.65);
+  margin: 3px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sparkle dots — decorative */
+.notif-welcome-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(200, 160, 255, 0.55);
+  pointer-events: none;
+  animation: notifSparkle 2.5s ease-in-out infinite;
+}
+
+.notif-welcome-dot-1 {
+  width: 4px;
+  height: 4px;
+  top: 8px;
+  right: 70px;
+  animation-delay: 0s;
+}
+
+.notif-welcome-dot-2 {
+  width: 3px;
+  height: 3px;
+  top: 50%;
+  right: 45px;
+  animation-delay: 0.7s;
+}
+
+.notif-welcome-dot-3 {
+  width: 3px;
+  height: 3px;
+  bottom: 9px;
+  right: 60px;
+  animation-delay: 1.4s;
+}
+
+@keyframes notifSparkle {
+
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(1.5);
+  }
+}
+
+/* ─── Mobile: welcome banner ─────────────────────────────── */
+@media (max-width: 540px) {
+  .notif-welcome-banner {
+    bottom: 24px;
+    border-radius: 20px;
+    padding: 10px 16px 10px 10px;
+    gap: 10px;
+  }
+
+  .notif-welcome-logo-wrap {
+    width: 42px;
+    height: 42px;
+  }
+
+  .notif-welcome-title {
+    font-size: 15px;
+  }
+}
+
+/* ─── Mobile: pill container ─────────────────────────────── */
+@media (max-width: 639px) {
+  .notif-pill-container {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    padding: 0 16px 20px;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .notif-pill-item {
+    width: 100%;
+    max-width: 380px;
+  }
+}
+
+/* ─── Mobile: modal ──────────────────────────────────────── */
+@media (max-width: 480px) {
+  .notif-modal-box {
+    border-radius: 22px;
+  }
+
+  .notif-modal-btn {
+    width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Keyframe animations
+   ═══════════════════════════════════════════════════════════ */
+
+/* Pill — slide in/out from right */
+@keyframes notifPillEnter {
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.93);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes notifPillExit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(50px) scale(0.91);
+  }
+}
+
+.notif-pill-enter {
+  animation: notifPillEnter 0.34s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.notif-pill-exit {
+  animation: notifPillExit 0.28s ease-in forwards;
+}
+
+/* Modal — scale + fade */
+@keyframes notifModalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes notifModalExit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.91) translateY(14px);
+  }
+}
+
+.notif-modal-enter {
+  animation: notifModalEnter 0.38s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.notif-modal-exit {
+  animation: notifModalExit 0.28s ease-in forwards;
+}
+
+/* Welcome banner — slide up from below */
+@keyframes notifWelcomeEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes notifWelcomeExit {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(24px) scale(0.95);
+  }
+}
+
+.notif-welcome-enter {
+  animation: notifWelcomeEnter 0.42s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.notif-welcome-exit {
+  animation: notifWelcomeExit 0.28s ease-in forwards;
+}
+
+/* Mobile: pills slide up from bottom */
+@media (max-width: 639px) {
+  @keyframes notifPillEnterMobile {
+    from {
+      opacity: 0;
+      transform: translateY(22px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes notifPillExitMobile {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(18px) scale(0.94);
+    }
+  }
+
+  .notif-pill-enter {
+    animation: notifPillEnterMobile 0.34s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+  }
+
+  .notif-pill-exit {
+    animation: notifPillExitMobile 0.28s ease-in forwards;
+  }
 }

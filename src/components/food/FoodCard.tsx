@@ -32,8 +32,7 @@ export default function FoodCard({ item }: FoodCardProps) {
       try {
         await addItemAsync(item.id, 1);
         notify.success(
-          `🛒 Added to cart!`,
-          `${item.name} is ready for checkout.`
+          `${item.name} Add to cart successfully`
         );
       } catch {
         notify.error(

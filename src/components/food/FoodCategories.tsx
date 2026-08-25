@@ -392,9 +392,8 @@ export default function FoodCategories({
               {/* Left fade — solid zone matches the generous left padding */}
               <div
                 aria-hidden="true"
-                className={`absolute left-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${
-                  showLeftFade ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute left-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${showLeftFade ? "opacity-100" : "opacity-0"
+                  }`}
                 style={{
                   width: "clamp(56px, 8vw, 100px)",
                   background:
@@ -404,9 +403,8 @@ export default function FoodCategories({
               {/* Right fade — solid zone matches the generous right padding */}
               <div
                 aria-hidden="true"
-                className={`absolute right-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${
-                  showRightFade ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute right-0 top-0 bottom-0 z-20 pointer-events-none transition-opacity duration-300 ${showRightFade ? "opacity-100" : "opacity-0"
+                  }`}
                 style={{
                   width: "clamp(56px, 8vw, 100px)",
                   background:
@@ -439,27 +437,27 @@ export default function FoodCategories({
           >
             {isLoading
               ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0">
-                    <CategorySkeleton />
-                  </div>
-                ))
+                <div key={i} className="flex-shrink-0">
+                  <CategorySkeleton />
+                </div>
+              ))
               : categoriesList.map((cat, idx) => (
-                  <div
-                    key={cat.id}
-                    data-category-id={cat.id}
-                    className={isCentering ? "flex-shrink-0" : "flex-shrink-0 snap-start"}
-                  >
-                    <CategoryButton
-                      cat={cat}
-                      isSelected={showAllOption ? activeCategory === cat.id : activeCategory === cat.name}
-                      colorIndex={idx}
-                      onClick={() => {
-                        if (hasDragged.current) return;
-                        handleCategoryClick(cat.id);
-                      }}
-                    />
-                  </div>
-                ))}
+                <div
+                  key={cat.id}
+                  data-category-id={cat.id}
+                  className={isCentering ? "flex-shrink-0" : "flex-shrink-0 snap-start"}
+                >
+                  <CategoryButton
+                    cat={cat}
+                    isSelected={showAllOption ? activeCategory === cat.id : activeCategory === cat.name}
+                    colorIndex={idx}
+                    onClick={() => {
+                      if (hasDragged.current) return;
+                      handleCategoryClick(cat.id);
+                    }}
+                  />
+                </div>
+              ))}
           </div>
         </div>
       </div>

@@ -67,7 +67,7 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             {/* Book Gaming Session */}
             <Link
-              href="/signup"
+              href="#services"
               className="btn-primary text-sm sm:text-base gap-2.5 w-[240px]"
               style={{
                 "--btn-height": "52px",

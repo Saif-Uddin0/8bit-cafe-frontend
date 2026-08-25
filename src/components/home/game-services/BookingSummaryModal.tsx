@@ -115,8 +115,12 @@ export default function BookingSummaryModal({
         queryKey: ["availableSlots"],
       });
 
-      // Redirect to payment gateway
-      window.location.href = redirectUrl;
+      // Show booking confirmed modal notification, then redirect
+      notify.modal.success("Please complete your payment to confirm the booking.", undefined, 2200);
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1800);
+
     } catch (error: any) {
       console.error("Proceed to payment error:", error);
 

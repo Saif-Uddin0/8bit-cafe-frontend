@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Orbitron, Jersey_20 } from "next/font/google";
-import { ToastContainer } from "react-toastify";
+import { Inter, Orbitron, Jersey_20, Poppins } from "next/font/google";
 import { CartProvider } from "@/contexts/CartContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import NotificationRenderer from "@/components/ui/NotificationRenderer";
 import QueryProvider from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
-import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 // --- Body font: Inter (clean, modern, readable) ---
@@ -30,6 +30,14 @@ const jersey20 = Jersey_20({
   weight: "400",
 });
 
+// --- Poppins (used in notification toasts) ---
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "8bit Café — Your Ultimate Gaming Lounge",
   description:
@@ -49,25 +57,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${orbitron.variable} ${jersey20.variable}`}>
+    <html lang="en" className={`${inter.variable} ${orbitron.variable} ${jersey20.variable} ${poppins.variable}`}>
       <body className="min-h-screen bg-background text-text-primary antialiased">
         <QueryProvider>
           <AuthProvider>
             <CartProvider>
-              {children}
+              <NotificationProvider>
+                {children}
+                <NotificationRenderer />
+              </NotificationProvider>
             </CartProvider>
           </AuthProvider>
         </QueryProvider>
-        <ToastContainer
-          position="top-right"
-          autoClose={3500}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick={false}
-          pauseOnHover
-          draggable
-          theme="dark"
-        />
       </body>
     </html>
   );
