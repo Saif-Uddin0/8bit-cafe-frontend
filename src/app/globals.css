@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================
-   Global Base Styles
-   ============================================================ */
+/*Global Base Styles*/
 
 *,
 *::before,
@@ -39,9 +37,7 @@ html {
   /* IE and Edge */
 }
 
-/* ============================================================
-   Utility Classes (used throughout components)
-   ============================================================ */
+/* Utility Classes (used throughout components) */
 
 /* Brand gradient text — #6C04D7 → #CD4ECD */
 .gradient-text {
@@ -333,9 +329,7 @@ html {
   animation-play-state: paused;
 }
 
-/* ============================================================
-   Swiper Pagination Dot Overrides
-   ============================================================ */
+/* Swiper Pagination Dot Overrides */
 .swiper-pagination-bullet {
   background: rgba(255, 255, 255, 0.4) !important;
   opacity: 1 !important;
@@ -349,9 +343,7 @@ html {
   transition: all 0.3s ease !important;
 }
 
-/* ============================================================
-   Custom Animation Utilities
-   ============================================================ */
+/* Custom Animation Utilities */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -368,14 +360,10 @@ html {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* ============================================================
-   8bit Café — Custom Notification System
-   ============================================================ */
+/*  8bit Café — Custom Notification System */
 
-/* ─── Pill container
-     Anchored to bottom: 0 / right: 0 with internal padding.
-     This avoids the overflow-x: hidden body clipping on some browsers.
-   ─────────────────────────────────────────────────────────── */
+/* Pill container Anchored to bottom: 0 / right: 0 with internal padding.
+     This avoids the overflow-x: hidden body clipping on some browsers. */
 .notif-pill-container {
   position: fixed;
   bottom: 0;
@@ -392,7 +380,7 @@ html {
   box-sizing: border-box;
 }
 
-/* ─── Each pill item ──────────────────────────────────────── */
+/* Each pill item  */
 .notif-pill-item {
   pointer-events: auto;
   display: flex;
@@ -412,7 +400,7 @@ html {
   will-change: transform, opacity;
 }
 
-/* ─── Modal overlay ──────────────────────────────────────── */
+/*  Modal overlay  */
 .notif-modal-overlay {
   position: fixed;
   inset: 0;
@@ -428,7 +416,7 @@ html {
   overflow-y: auto;
 }
 
-/* ─── Modal box ──────────────────────────────────────────── */
+/*  Modal box  */
 .notif-modal-box {
   display: flex;
   flex-direction: column;
@@ -452,7 +440,7 @@ html {
   display: none;
 }
 
-/* ─── Modal icon ─────────────────────────────────────────── */
+/*  Modal icon  */
 .notif-modal-icon {
   width: clamp(80px, 22vw, 120px);
   height: clamp(80px, 22vw, 120px);
@@ -460,7 +448,7 @@ html {
   flex-shrink: 0;
 }
 
-/* ─── Modal title ────────────────────────────────────────── */
+/*  Modal title  */
 .notif-modal-title {
   font-family: 'Poppins', var(--font-poppins), sans-serif;
   font-size: clamp(18px, 4.5vw, 22px);
@@ -470,7 +458,7 @@ html {
   word-break: break-word;
 }
 
-/* ─── Modal message ──────────────────────────────────────── */
+/*  Modal message  */
 .notif-modal-msg {
   font-family: 'Poppins', var(--font-poppins), sans-serif;
   font-size: clamp(11px, 2.5vw, 13px);
@@ -482,7 +470,7 @@ html {
   max-width: 320px;
 }
 
-/* ─── Modal action button ────────────────────────────────── */
+/*  Modal action button  */
 .notif-modal-btn {
   font-family: 'Poppins', var(--font-poppins), sans-serif;
   font-size: 15px;
@@ -507,10 +495,9 @@ html {
   transform: scale(0.97);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/*
    Welcome Banner — horizontal glassmorphism strip
-   Matches Frame 2147242989 design
-   ═══════════════════════════════════════════════════════════ */
+   Matches Frame 2147242989 design */
 
 .notif-welcome-banner {
   position: fixed;
@@ -685,7 +672,7 @@ html {
   }
 }
 
-/* ─── Mobile: welcome banner ─────────────────────────────── */
+/* Mobile: welcome banner  */
 @media (max-width: 540px) {
   .notif-welcome-banner {
     bottom: 24px;
@@ -704,7 +691,7 @@ html {
   }
 }
 
-/* ─── Mobile: pill container ─────────────────────────────── */
+/* Mobile: pill container  */
 @media (max-width: 639px) {
   .notif-pill-container {
     bottom: 0;
@@ -721,7 +708,7 @@ html {
   }
 }
 
-/* ─── Mobile: modal ──────────────────────────────────────── */
+/*  Mobile: modal */
 @media (max-width: 480px) {
   .notif-modal-box {
     border-radius: 22px;
@@ -732,9 +719,8 @@ html {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   Keyframe animations
-   ═══════════════════════════════════════════════════════════ */
+/*
+   Keyframe animations ═ */
 
 /* Pill — slide in/out from right */
 @keyframes notifPillEnter {
