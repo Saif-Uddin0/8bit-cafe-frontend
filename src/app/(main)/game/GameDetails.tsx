@@ -42,9 +42,7 @@ export default function GameDetails({ game }: Props) {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  /* --------------------------------------------------
-     Restore pending booking after login
-  -------------------------------------------------- */
+  /* Restore pending booking after login */
   useEffect(() => {
     const pending = loadPendingBooking();
 

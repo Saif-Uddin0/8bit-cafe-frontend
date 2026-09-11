@@ -17,6 +17,8 @@ import {
   Utensils,
   ChevronLeft,
   ChevronRight,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import type { ApiTransaction } from "@/types/api";
@@ -102,7 +104,7 @@ function StatusBadge({ status }: { status: string }) {
         text-[10px]
         font-bold
         uppercase
-        tracking-wider
+        
         border
         whitespace-nowrap
         ${cls}
@@ -133,7 +135,7 @@ function PaymentTypeBadge({ type }: { type: string }) {
         text-[10px]
         font-bold
         uppercase
-        tracking-wider
+        
         border
         whitespace-nowrap
         ${isGame
@@ -189,7 +191,7 @@ function TransactionDetailPanel({
           Payment Method
         </span>
 
-        <span className="text-white/70">
+        <span className="text-white/80">
           {txn.paymentMethod ?? "Not Available"}
         </span>
       </div>
@@ -259,7 +261,7 @@ function TransactionDetailPanel({
           Created Date
         </span>
 
-        <span className="text-white/70">
+        <span className="text-white/80">
           {formatDateTime(txn.createdAt)}
         </span>
       </div>
@@ -271,7 +273,7 @@ function TransactionDetailPanel({
             Customer Name
           </span>
 
-          <span className="text-white/70">
+          <span className="text-white/80">
             {txn.customerName}
           </span>
         </div>
@@ -284,7 +286,7 @@ function TransactionDetailPanel({
             Phone
           </span>
 
-          <span className="text-white/70">
+          <span className="text-white/80">
             {txn.customerPhone}
           </span>
         </div>
@@ -297,7 +299,7 @@ function TransactionDetailPanel({
             Address
           </span>
 
-          <span className="text-white/70">
+          <span className="text-white/80">
             {txn.customerAddress}
           </span>
         </div>
@@ -310,7 +312,7 @@ function TransactionDetailPanel({
             City
           </span>
 
-          <span className="text-white/70">
+          <span className="text-white/80">
             {txn.customerCity}
           </span>
         </div>
@@ -319,7 +321,7 @@ function TransactionDetailPanel({
   );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-xs text-white/70">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-xs text-white/80">
       {/* Type specific ID */}
       <div>
         <span className="text-white/50 block mb-1">
@@ -404,7 +406,7 @@ function TransactionCard({
           </span>
 
           <p
-            className="text-white/70 font-mono truncate mt-0.5"
+            className="text-white/80 font-mono truncate mt-0.5"
             title={txn.transactionId ?? "—"}
           >
             {txn.transactionId ?? "—"}
@@ -418,7 +420,7 @@ function TransactionCard({
           </span>
 
           <p
-            className="text-white/70 font-mono truncate mt-0.5"
+            className="text-white/80 font-mono truncate mt-0.5"
             title={txn.merchantTxnId || "—"}
           >
             {txn.merchantTxnId || "—"}
@@ -434,7 +436,7 @@ function TransactionCard({
           </span>
 
           <p
-            className="text-white/70 font-mono truncate mt-0.5"
+            className="text-white/80 font-mono truncate mt-0.5"
             title={bookingOrOrderId || "—"}
           >
             {bookingOrOrderId || "—"}
@@ -448,7 +450,7 @@ function TransactionCard({
             className="text-white/50 shrink-0 mt-0.5"
           />
 
-          <span className="text-white/70">
+          <span className="text-white/80">
             {formatDateTime(txn.createdAt)}
           </span>
         </div>
@@ -468,7 +470,7 @@ function TransactionCard({
             hover:text-[#CD4ECD]
             font-semibold
             uppercase
-            tracking-wider
+            
             transition
           "
         >
@@ -567,7 +569,7 @@ function TransactionTableRow({
           <span
             className="
               block
-              text-white/70
+              text-white/80
               font-mono
               text-xs
               truncate
@@ -583,7 +585,7 @@ function TransactionTableRow({
           <span
             className="
               block
-              text-white/70
+              text-white/80
               font-mono
               text-xs
               truncate
@@ -599,7 +601,7 @@ function TransactionTableRow({
           <span
             className="
               block
-              text-white/70
+              text-white/80
               font-mono
               text-xs
               truncate
@@ -711,19 +713,29 @@ function PaginationControls({
   total,
   limit,
   onPageChange,
+  currentCount = 0,
 }: {
   page: number;
-  totalPages: number;
-  total: number;
+  totalPages?: number | null;
+  total?: number | null;
   limit: number;
   onPageChange: (p: number) => void;
+  currentCount?: number;
 }) {
-  if (totalPages <= 1) {
-    return null;
-  }
+  const computedTotal = total ?? 0;
+  const calcTotalPages = Math.max(
+    1,
+    totalPages ?? (computedTotal > 0 ? Math.ceil(computedTotal / limit) : 1)
+  );
 
-  const start = (page - 1) * limit + 1;
-  const end = Math.min(page * limit, total);
+  const start = computedTotal > 0 ? (page - 1) * limit + 1 : (currentCount > 0 ? (page - 1) * limit + 1 : 0);
+  const end = computedTotal > 0 ? Math.min(page * limit, computedTotal) : (page - 1) * limit + currentCount;
+
+  // Next page is active if current page < totalPages OR if current page returned full limit of 10 items
+  const canGoNext = page < calcTotalPages || currentCount === limit;
+
+  // Total visible page count in pagination bar
+  const maxPagesVisible = Math.max(calcTotalPages, canGoNext ? page + 1 : page);
 
   return (
     <div
@@ -738,20 +750,21 @@ function PaginationControls({
       "
     >
       {/* Count */}
-      <p className="text-white/70 text-xs">
+      <p className="text-white/80 text-xs">
         Showing{" "}
-        <span className="text-white/70">
+        <span className="text-white font-semibold">
           {start}–{end}
         </span>{" "}
-        of{" "}
-        <span className="text-white/70">
-          {total}
-        </span>{" "}
+        {computedTotal > 0 && (
+          <>
+            of <span className="text-white font-semibold">{computedTotal}</span>{" "}
+          </>
+        )}
         transactions
       </p>
 
       {/* Controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {/* Previous */}
         <button
           type="button"
@@ -759,89 +772,96 @@ function PaginationControls({
           disabled={page <= 1}
           aria-label="Previous page"
           className="
-            w-9
-            h-9
+            w-10
+            h-10
             flex
             items-center
             justify-center
-            rounded-lg
+            rounded-full
             border
-            border-white/10
-            text-white/40
+            border-white/15
+            bg-white/[0.03]
+            text-white/60
             hover:text-white
-            hover:border-[#6C04D7]/50
-            hover:bg-[#6C04D7]/10
-            disabled:opacity-30
+            hover:border-[#6C04D7]
+            hover:bg-[#6C04D7]/15
+            disabled:opacity-20
             disabled:cursor-not-allowed
-            transition
+            transition-all
+            duration-200
+            cursor-pointer
           "
         >
-          <ChevronLeft size={15} />
+          <ChevronLeft size={16} strokeWidth={2} />
         </button>
 
-        {/* Page */}
-        <div
-          className="
-            min-w-[70px]
-            h-9
-            px-3
-            flex
-            items-center
-            justify-center
-            rounded-lg
-            border
-            border-white/5
-            bg-white/[0.02]
-            text-white/70
-            text-xs
-            font-mono
-          "
-        >
-          <span className="text-white">
-            {page}
-          </span>
+        {/* Page Buttons */}
+        <div className="flex items-center gap-2">
+          {Array.from({ length: maxPagesVisible }).map((_, idx) => {
+            const p = idx + 1;
+            const isActive = p === page;
 
-          <span className="mx-1.5 text-white/20">
-            /
-          </span>
-
-          {totalPages}
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPageChange(p)}
+                className={`
+    w-10 h-10
+    flex items-center justify-center
+    rounded-full
+    text-sm font-bold
+    transition-all duration-200
+    cursor-pointer
+    ${isActive
+                    ? "bg-white/90 shadow-[0_0_16px_rgba(108,4,215,0.7),0_0_8px_rgba(205,78,205,0.5)]"
+                    : "bg-white/[0.03] border border-white/15 hover:bg-white/[0.08] hover:border-[#6C04D7]"
+                  }
+  `}
+              >
+                <span className="bg-gradient-to-r from-[#780DD6] to-[#CB4DCE] bg-clip-text text-transparent">
+                  {p}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Next */}
         <button
           type="button"
           onClick={() => onPageChange(page + 1)}
-          disabled={page >= totalPages}
+          disabled={!canGoNext}
           aria-label="Next page"
           className="
-            w-9
-            h-9
+            w-10
+            h-10
             flex
             items-center
             justify-center
-            rounded-lg
+            rounded-full
             border
-            border-white/10
-            text-white/40
+            border-white/15
+            bg-white/[0.03]
+            text-white/60
             hover:text-white
-            hover:border-[#6C04D7]/50
-            hover:bg-[#6C04D7]/10
-            disabled:opacity-30
+            hover:border-[#6C04D7]
+            hover:bg-[#6C04D7]/15
+            disabled:opacity-20
             disabled:cursor-not-allowed
-            transition
+            transition-all
+            duration-200
+            cursor-pointer
           "
         >
-          <ChevronRight size={15} />
+          <ChevronRight size={16} strokeWidth={2} />
         </button>
       </div>
     </div>
   );
 }
 
-// ============================================================
 // Empty State
-// ============================================================
 
 function EmptyTransactions() {
   return (
@@ -884,7 +904,7 @@ function EmptyTransactions() {
             text-2xl
             text-white
             uppercase
-            tracking-wider
+            
             mb-2
           "
           style={{
@@ -892,7 +912,7 @@ function EmptyTransactions() {
             fontWeight: 400,
           }}
         >
-          No Transactions Yet
+          No Transactions Found
         </h2>
 
         <p
@@ -903,9 +923,7 @@ function EmptyTransactions() {
             leading-relaxed
           "
         >
-          You haven&apos;t made any payments yet.
-          Book a gaming session or order food to
-          get started!
+          No transaction history matched your criteria.
         </p>
       </div>
 
@@ -924,7 +942,7 @@ function EmptyTransactions() {
             font-bold
             text-sm
             uppercase
-            tracking-wider
+            
             hover:shadow-[0_0_24px_rgba(108,4,215,0.6)]
             hover:scale-[1.02]
             active:scale-95
@@ -942,13 +960,13 @@ function EmptyTransactions() {
             rounded-xl
             border
             border-[#6C04D7]/40
-            text-white/70
+            text-white/80
             hover:border-[#6C04D7]
             hover:text-white
             font-bold
             text-sm
             uppercase
-            tracking-wider
+            
             transition
           "
         >
@@ -959,9 +977,7 @@ function EmptyTransactions() {
   );
 }
 
-// ============================================================
 // Main Page Content
-// ============================================================
 
 function MyTransactionsPageContent() {
   const { user, loading: authLoading } = useAuth();
@@ -969,12 +985,19 @@ function MyTransactionsPageContent() {
   const isAuthenticated = !!user;
 
   const [page, setPage] = useState(1);
+  const [methodFilter, setMethodFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
 
   const {
     data,
     isLoading,
     isError,
-  } = useMyTransactions(page, PAGE_LIMIT);
+  } = useMyTransactions(page, PAGE_LIMIT, {
+    method: methodFilter,
+    status: statusFilter,
+    paymentType: typeFilter,
+  });
 
   // Newest first
   const transactions = [
@@ -986,6 +1009,18 @@ function MyTransactionsPageContent() {
   );
 
   const meta = data?.meta ?? null;
+
+  const hasActiveFilters =
+    methodFilter !== "ALL" ||
+    statusFilter !== "ALL" ||
+    typeFilter !== "ALL";
+
+  const handleResetFilters = () => {
+    setMethodFilter("ALL");
+    setStatusFilter("ALL");
+    setTypeFilter("ALL");
+    setPage(1);
+  };
 
   return (
     <ProtectedRoute>
@@ -1001,9 +1036,7 @@ function MyTransactionsPageContent() {
       >
         <div className="max-w-6xl mx-auto">
 
-          {/* ==================================================
-              Page Header
-          ================================================== */}
+          {/* Page Header */}
 
           <div className="flex items-center gap-3 mb-8">
             <div
@@ -1031,7 +1064,7 @@ function MyTransactionsPageContent() {
                   text-3xl
                   text-white
                   uppercase
-                  tracking-wider
+                  
                   leading-none
                 "
                 style={{
@@ -1051,9 +1084,93 @@ function MyTransactionsPageContent() {
             </div>
           </div>
 
-          {/* ==================================================
-              Auth Loading
-          ================================================== */}
+          {/* Filter Controls */}
+          {isAuthenticated && (
+            <div className="bg-[#12091F] border border-[#6C04D7]/30 rounded-2xl p-4 sm:p-5 mb-6 shadow-lg">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2 text-white/80 font-semibold text-xs uppercase ">
+                  <Filter size={14} className="text-[#CD4ECD]" />
+                  Filter Transactions
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition cursor-pointer"
+                  >
+                    <RotateCcw size={12} />
+                    Reset Filters
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-7">
+                {/* Method Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-white/80 mb-3">
+                    Payment Method
+                  </label>
+                  <select
+                    value={methodFilter}
+                    onChange={(e) => {
+                      setMethodFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full bg-[#0A0612] border border-white/10 text-white/90 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#6C04D7] transition cursor-pointer"
+                  >
+                    <option value="ALL">All Methods</option>
+                    <option value="bKash">bKash</option>
+                    <option value="Nagad">Nagad</option>
+                    <option value="Rocket">Rocket</option>
+                    <option value="Bank">Bank</option>
+                  </select>
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-white/80 mb-3">
+                    Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full bg-[#0A0612] border border-white/10 text-white/90 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#6C04D7] transition cursor-pointer"
+                  >
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="SUCCESS">Success</option>
+                    <option value="FAILED">Failed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                </div>
+
+                {/* Payment Type Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-white/80 mb-3">
+                    Payment Type
+                  </label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => {
+                      setTypeFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full bg-[#0A0612] border border-white/10 text-white/90 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#6C04D7] transition cursor-pointer"
+                  >
+                    <option value="ALL">All Types</option>
+                    <option value="FOOD">Food Payment</option>
+                    <option value="GAME">Game Payment</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Auth Loading */}
 
           {authLoading && (
             <div className="flex justify-center py-24">
@@ -1067,9 +1184,7 @@ function MyTransactionsPageContent() {
             </div>
           )}
 
-          {/* ==================================================
-              Unauthenticated
-          ================================================== */}
+          {/* Unauthenticated */}
 
           {!authLoading && !isAuthenticated && (
             <div
@@ -1109,7 +1224,7 @@ function MyTransactionsPageContent() {
                     text-2xl
                     text-white
                     uppercase
-                    tracking-wider
+                    
                     mb-2
                   "
                   style={{
@@ -1140,7 +1255,7 @@ function MyTransactionsPageContent() {
                   font-bold
                   text-sm
                   uppercase
-                  tracking-wider
+                  
                   hover:shadow-[0_0_24px_rgba(108,4,215,0.6)]
                   hover:scale-[1.02]
                   active:scale-95
@@ -1237,35 +1352,35 @@ function MyTransactionsPageContent() {
                       <thead>
                         <tr className="border-b border-white/10 bg-white/[0.015]">
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap w-[90px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap w-[90px]">
                             Type
                           </th>
 
-                          <th className="text-right py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap w-[105px]">
+                          <th className="text-right py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap w-[105px]">
                             Amount
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap w-[105px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap w-[105px]">
                             Method
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap min-w-[125px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap min-w-[125px]">
                             Transaction ID
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap min-w-[135px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap min-w-[135px]">
                             Merchant Txn ID
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap min-w-[145px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap min-w-[145px]">
                             Booking / Order ID
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap w-[110px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap w-[110px]">
                             Status
                           </th>
 
-                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase tracking-wider text-white/50 whitespace-nowrap min-w-[155px]">
+                          <th className="text-left py-3.5 px-3 text-[10px] font-bold uppercase  text-white/50 whitespace-nowrap min-w-[155px]">
                             Date
                           </th>
 
@@ -1286,15 +1401,14 @@ function MyTransactionsPageContent() {
                 </div>
 
                 {/* Pagination */}
-                {meta && (
-                  <PaginationControls
-                    page={meta.page}
-                    totalPages={meta.totalPages}
-                    total={meta.total}
-                    limit={meta.limit}
-                    onPageChange={setPage}
-                  />
-                )}
+                <PaginationControls
+                  page={meta?.page ?? page}
+                  totalPages={meta?.totalPages}
+                  total={meta?.total ?? transactions.length}
+                  limit={meta?.limit ?? PAGE_LIMIT}
+                  onPageChange={setPage}
+                  currentCount={transactions.length}
+                />
               </>
             )}
         </div>

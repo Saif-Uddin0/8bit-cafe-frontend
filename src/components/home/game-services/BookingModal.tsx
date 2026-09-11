@@ -18,12 +18,63 @@ const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+// Maps the backend's uppercase weekday names to JS Date.getDay() values (0=Sun … 6=Sat)
+const WEEKDAY_NAME_TO_JS_DAY: Record<string, number> = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+};
+
+/**
+ * Converts a game's schedules array into a Set of JS day-of-week numbers
+ * that the game is OPEN on.  Returns null when no schedules are provided
+ * (meaning: no schedule restrictions — all days selectable).
+ */
+function buildOpenWeekdays(schedules: Array<{ day: string }> | undefined | null): Set<number> | null {
+  if (!schedules || schedules.length === 0) return null;
+  const set = new Set<number>();
+  for (const sch of schedules) {
+    const idx = WEEKDAY_NAME_TO_JS_DAY[sch.day.toUpperCase()];
+    if (idx !== undefined) set.add(idx);
+  }
+  return set.size > 0 ? set : null;
+}
+
+/**
+ * Returns a list of day names that the game is CLOSED on.
+ */
+function getOffDayNames(schedules: Array<{ day: string }> | undefined | null): string[] {
+  if (!schedules || schedules.length === 0) return [];
+  const openSet = buildOpenWeekdays(schedules);
+  if (!openSet) return [];
+  const ALL_WEEKDAYS = [
+    { name: "Sunday", day: 0 },
+    { name: "Monday", day: 1 },
+    { name: "Tuesday", day: 2 },
+    { name: "Wednesday", day: 3 },
+    { name: "Thursday", day: 4 },
+    { name: "Friday", day: 5 },
+    { name: "Saturday", day: 6 },
+  ];
+  return ALL_WEEKDAYS.filter((w) => !openSet.has(w.day)).map((w) => w.name);
+}
+
 function CustomCalendar({
   selected,
   onSelect,
+  openWeekdays = null,
+  offDayNames = [],
 }: {
   selected: Date | null;
   onSelect: (d: Date) => void;
+  /** JS day-of-week indices (0=Sun…6=Sat) that the game is open on.
+   *  When null, all days are selectable (no schedule restriction). */
+  openWeekdays?: Set<number> | null;
+  offDayNames?: string[];
 }) {
   const [current, setCurrent] = useState(new Date());
   const year = current.getFullYear();
@@ -38,10 +89,12 @@ function CustomCalendar({
   };
   const nextMonth = () => setCurrent(new Date(year, month + 1, 1));
 
-  const isFuture = (d: Date) => {
+  const isPast = (d: Date) => {
     const t = new Date(); t.setHours(0, 0, 0, 0);
-    return d.getTime() >= t.getTime();
+    return d.getTime() < t.getTime();
   };
+  const isOffDay = (d: Date) =>
+    openWeekdays !== null && !openWeekdays.has(d.getDay());
   const isSel = (d: Date) =>
     !!selected &&
     d.getDate() === selected.getDate() &&
@@ -58,44 +111,58 @@ function CustomCalendar({
   ];
 
   return (
-    <div className="w-full bg-[#0A061A] border border-white/8 rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-4">
-        <button type="button" onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition">
-          <ChevronLeft size={16} />
-        </button>
-        <span className="text-xs font-bold text-white uppercase tracking-wider">
-          {MONTH_NAMES[month]} {year}
-        </span>
-        <button type="button" onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition">
-          <ChevronRight size={16} />
-        </button>
+    <div className="w-full h-[255px] sm:h-[300px] bg-[#0A061A] border border-white/20 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between overflow-hidden">
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <button type="button" onClick={prevMonth} className="p-1 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs font-bold text-white uppercase tracking-wider">
+            {MONTH_NAMES[month]} {year}
+          </span>
+          <button type="button" onClick={nextMonth} className="p-1 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-white/30 mb-1.5">
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => <span key={d}>{d}</span>)}
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {cells.map((date, i) => {
+            if (!date) return <div key={`p-${i}`} />;
+            const past    = isPast(date);
+            const offDay  = isOffDay(date);
+            const disabled = past || offDay;
+            const sel     = isSel(date);
+            const today   = isToday(date);
+            return (
+              <button
+                key={`d-${date.getDate()}`}
+                type="button"
+                disabled={disabled}
+                title={offDay ? `Closed on ${date.toLocaleDateString('en-US', { weekday: 'long' })}s` : undefined}
+                onClick={() => !disabled && onSelect(date)}
+                className={`
+                  h-7 w-7 mx-auto flex items-center justify-center rounded-full
+                  text-[11px] font-semibold transition-all
+                  ${disabled ? "text-white/15 cursor-not-allowed" : "text-white/70 hover:bg-[#6C04D7]/25"}
+                  ${sel ? "bg-gradient-to-br from-[#F862C9] to-[#6C04D7] text-white shadow-md scale-110" : ""}
+                  ${!sel && today && !disabled ? "ring-1 ring-[#CD4ECD] text-[#CD4ECD]" : ""}
+                `}
+              >{date.getDate()}</button>
+            );
+          })}
+        </div>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-white/30 mb-2">
-        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => <span key={d}>{d}</span>)}
-      </div>
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {cells.map((date, i) => {
-          if (!date) return <div key={`p-${i}`} />;
-          const disabled = !isFuture(date);
-          const sel = isSel(date);
-          const today = isToday(date);
-          return (
-            <button
-              key={`d-${date.getDate()}`}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSelect(date)}
-              className={`
-                h-7 w-7 mx-auto flex items-center justify-center rounded-full
-                text-[11px] font-semibold transition-all
-                ${disabled ? "text-white/15 cursor-not-allowed" : "text-white/70 hover:bg-[#6C04D7]/25"}
-                ${sel ? "bg-gradient-to-br from-[#F862C9] to-[#6C04D7] text-white shadow-md scale-110" : ""}
-                ${!sel && today ? "ring-1 ring-[#CD4ECD] text-[#CD4ECD]" : ""}
-              `}
-            >{date.getDate()}</button>
-          );
-        })}
-      </div>
+
+      {offDayNames.length > 0 && (
+        <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
+          <span className="flex items-center gap-1.5 text-amber-400/90 font-medium truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+            Closed: {offDayNames.join(", ")}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -104,7 +171,7 @@ function CustomCalendar({
 
 function SlotSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[285px] overflow-hidden">
+    <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[300px] overflow-hidden">
       {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
@@ -524,13 +591,25 @@ export default function BookingModal({
           {/* Calendar + Time Slots */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-1">
             {/* Calendar */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2.5">
               <label className={labelCls}>Preferred Date</label>
-              <CustomCalendar selected={selectedDate} onSelect={setSelectedDate} />
+              <CustomCalendar
+                selected={selectedDate}
+                openWeekdays={buildOpenWeekdays(selectedGame?.schedules)}
+                offDayNames={getOffDayNames(selectedGame?.schedules)}
+                onSelect={(d) => {
+                  // Safety gate: never select a closed weekday even if the button
+                  // somehow gets clicked (e.g. keyboard navigation)
+                  const open = buildOpenWeekdays(selectedGame?.schedules);
+                  if (open !== null && !open.has(d.getDay())) return;
+                  setSelectedDate(d);
+                  setSelectedSlot(null);
+                }}
+              />
             </div>
 
             {/* Available Slots */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
                 <label className={labelCls}>Availability for {dateLabel}</label>
                 {/* Duration hint pill */}
@@ -544,7 +623,7 @@ export default function BookingModal({
 
               {/* Error — suggest off day */}
               {slotsError && !slotsLoading && (
-                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center min-h-[130px]">
+                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center h-[255px] sm:h-[300px]">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10">
                     <CalendarX size={20} strokeWidth={1.5} className="text-amber-400" />
                   </div>
@@ -560,7 +639,7 @@ export default function BookingModal({
 
               {/* Empty — Off Day */}
               {!slotsLoading && !slotsError && slots.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center min-h-[130px]">
+                <div className="flex flex-col items-center justify-center gap-3 bg-[#0A061A] border border-amber-500/20 rounded-2xl p-6 text-center h-[255px] sm:h-[300px]">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10">
                     <CalendarX size={20} strokeWidth={1.5} className="text-amber-400" />
                   </div>
@@ -576,7 +655,7 @@ export default function BookingModal({
 
               {/* Slots grid */}
               {!slotsLoading && !slotsError && slots.length > 0 && (
-                <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[285px] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2.5 bg-[#0A061A] border border-[#6C04D7]/25 rounded-2xl p-3.5 h-[255px] sm:h-[300px] overflow-y-auto">
                   {slots.map((slot) => {
                     const isSelected = selectedSlot?.startTime === slot.startTime;
                     return (

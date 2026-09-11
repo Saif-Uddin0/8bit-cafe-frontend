@@ -53,7 +53,7 @@ export default function GameServiceCard({
       {/* ── Discount badge (top-left) ── */}
       {hasDiscount && (
         <div className="absolute top-3 left-3 z-20">
-          <div className="flex items-center gap-1 bg-gradient-to-r from-[#B7E9E9] to-[#66D1E5] text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(248,98,201,0.5)] tracking-wide">
+          <div className="flex items-center gap-1 bg-gradient-to-r from-[#B7E9E9] to-[#66D1E5] text-black/80 text-sm font-medium px-2.5 py-1 rounded-full">
             🔥 {discountPct}% OFF
           </div>
         </div>
