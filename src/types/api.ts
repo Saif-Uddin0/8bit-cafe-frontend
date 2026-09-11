@@ -181,31 +181,50 @@ export interface ApiFoodOrderResponse {
 // ─── Transactions ─────────────────────────────────────────────────────────────
 export interface ApiTransaction {
   id: string;
-  userId: string;
+  userId?: string;
   paymentType: "GAME" | "FOOD" | string;
   gameBookingId: string | null;
   foodOrderId: string | null;
   amount: number;
-  paymentMethod: string;
+  paymentMethod: string | null;
   merchantTxnId: string;
   customerOrderId: string;
-  transactionId: string;
-  transactionTypeId: number;
+  transactionId: string | null;
+  transactionTypeId?: number;
   status: "SUCCESS" | "PENDING" | "FAILED" | string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   customerAddress: string | null;
   customerCity: string | null;
-  customerPostcode: string | null;
-  valueA: string;   // paymentType repeated
-  valueB: string;   // bookingId or foodOrderId
+  customerPostcode?: string | null;
+  valueA?: string;
+  valueB?: string;
   createdAt: string;
   updatedAt: string;
+  // Nested user object returned by the new API
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    image: string | null;
+  };
 }
 
+export interface ApiTransactionsMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+// New response shape: { data: { meta: {...}, data: ApiTransaction[] }, success, message }
 export interface ApiTransactionsResponse {
-  data: ApiTransaction[];
+  data: {
+    meta: ApiTransactionsMeta;
+    data: ApiTransaction[];
+  };
   success: boolean;
   message: string;
 }

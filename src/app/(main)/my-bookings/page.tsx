@@ -21,7 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ApiBooking } from "@/types/api";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers 
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -47,7 +47,7 @@ function formatCountdown(secs: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// ─── Payment Status Badge ─────────────────────────────────────────────────────
+//  Payment Status Badge 
 
 const PAYMENT_STATUS: Record<string, string> = {
   PAID: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
@@ -64,7 +64,7 @@ function PaymentBadge({ status }: { status: string }) {
   );
 }
 
-// ─── Game Status Badge ────────────────────────────────────────────────────────
+//  Game Status Badge 
 
 const GAME_STATUS: Record<string, string> = {
   NOT_STARTED: "bg-blue-500/15  text-blue-400  border-blue-500/30",
@@ -82,7 +82,7 @@ function GameStatusBadge({ status }: { status: string }) {
   );
 }
 
-// ─── Countdown for PENDING bookings ───────────────────────────────────────────
+//  Countdown for PENDING bookings 
 
 function PendingCountdown({ expiresAt }: { expiresAt: string }) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -105,7 +105,7 @@ function PendingCountdown({ expiresAt }: { expiresAt: string }) {
   );
 }
 
-// ─── Live Booking Countdown component (uses expiresAt) ──────────────────────────
+//  Live Booking Countdown component (uses expiresAt) 
 
 function BookingCountdown({ expiresAt }: { expiresAt: string }) {
   const queryClient = useQueryClient();
@@ -157,7 +157,7 @@ function BookingCountdown({ expiresAt }: { expiresAt: string }) {
   );
 }
 
-// ─── Loading Skeleton Card ────────────────────────────────────────────────────
+//  Loading Skeleton Card 
 
 function SkeletonCard() {
   return (
@@ -181,7 +181,7 @@ function SkeletonCard() {
   );
 }
 
-// ─── Booking Card ─────────────────────────────────────────────────────────────
+//  Booking Card 
 
 function BookingCard({ booking }: { booking: ApiBooking }) {
   const axiosSecure = useAxiosSecure();
@@ -327,7 +327,7 @@ function BookingCard({ booking }: { booking: ApiBooking }) {
   );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
+//  Empty State 
 
 function EmptyBookings() {
   return (
@@ -356,7 +356,7 @@ function EmptyBookings() {
   );
 }
 
-// ─── Sign In Prompt ───────────────────────────────────────────────────────────
+//  Sign In Prompt 
 
 function SignInPrompt() {
   return (
@@ -412,7 +412,6 @@ function MyBookingsPageContent() {
               >
                 My Bookings
               </h1>
-              <p className="text-white/40 text-xs mt-0.5">Your gaming session history</p>
             </div>
           </div>
 

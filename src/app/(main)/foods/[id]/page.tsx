@@ -9,26 +9,24 @@ import { useFoodDetail } from "@/hooks/useFoodDetail";
 // ─── Full-page skeleton ───────────────────────────────────────────────────────
 function FoodDetailSkeleton() {
   return (
-    <div className="max-w-[1200px] mx-auto px-5 animate-pulse">
-      <div className="rounded-[28px] border border-white/10 bg-[#1A0A38] p-8 lg:p-10 grid lg:grid-cols-[320px_1fr] gap-12">
-        {/* Image placeholder */}
-        <div className="flex justify-center items-start">
-          <div className="w-[270px] h-[270px] rounded-full bg-white/10" />
+    <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
+      <div className="rounded-[28px] sm:rounded-[32px] border border-white/10 bg-[#1A0A38] p-6 sm:p-8 lg:p-10 space-y-8">
+        <div className="max-w-[620px] mx-auto">
+          <div className="aspect-[16/10] w-full rounded-2xl bg-white/10" />
+          <div className="flex justify-center gap-2.5 mt-4">
+            <div className="w-16 h-16 rounded-xl bg-white/10" />
+            <div className="w-16 h-16 rounded-xl bg-white/10" />
+            <div className="w-16 h-16 rounded-xl bg-white/10" />
+          </div>
         </div>
-        {/* Info placeholder */}
-        <div className="space-y-4 pt-2">
-          <div className="h-8 w-64 rounded-full bg-white/10" />
-          <div className="h-5 w-32 rounded-full bg-white/10" />
-          <div className="space-y-2 mt-4">
-            <div className="h-4 w-40 rounded-full bg-white/10" />
-            <div className="h-4 w-48 rounded-full bg-white/10" />
+        <div className="space-y-4 border-t border-white/10 pt-6">
+          <div className="flex gap-2">
+            <div className="h-6 w-24 rounded-full bg-white/10" />
+            <div className="h-6 w-36 rounded-full bg-white/10" />
           </div>
-          <div className="h-20 w-full rounded-xl bg-white/10 mt-4" />
-          <div className="h-10 w-28 rounded-full bg-white/10 mt-4" />
-          <div className="flex gap-4 mt-6">
-            <div className="h-12 w-36 rounded-xl bg-white/10" />
-            <div className="h-12 w-36 rounded-xl bg-white/10" />
-          </div>
+          <div className="h-10 w-3/4 rounded-2xl bg-white/10" />
+          <div className="h-20 w-full rounded-2xl bg-white/10" />
+          <div className="h-12 w-full rounded-xl bg-white/10" />
         </div>
       </div>
     </div>

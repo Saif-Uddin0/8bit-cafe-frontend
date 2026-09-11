@@ -1,21 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosSecure } from "@/hooks/useAxiosSecure";
 import { useAuth } from "@/contexts/AuthContext";
-import type { ApiTransaction, ApiTransactionsResponse } from "@/types/api";
+import type {
+  ApiTransaction,
+  ApiTransactionsMeta,
+  ApiTransactionsResponse,
+} from "@/types/api";
 
-const fetchMyTransactions = async (): Promise<ApiTransaction[]> => {
+// Shape returned by the hook
+export interface MyTransactionsResult {
+  transactions: ApiTransaction[];
+  meta: ApiTransactionsMeta | null;
+}
+
+const fetchMyTransactions = async (
+  page: number,
+  limit: number
+): Promise<MyTransactionsResult> => {
   const res = await axiosSecure.get<ApiTransactionsResponse>(
-    "/api/payment/myTransection"
+    `/api/payment/myTransection?page=${page}&limit=${limit}`
   );
-  return res.data?.data ?? [];
+  // Response shape: { data: { meta: {...}, data: [...] }, success, message }
+  const inner = res.data?.data;
+  return {
+    transactions: inner?.data ?? [],
+    meta: inner?.meta ?? null,
+  };
 };
 
-export function useMyTransactions() {
+export function useMyTransactions(page = 1, limit = 10) {
   const { user } = useAuth();
 
-  return useQuery<ApiTransaction[]>({
-    queryKey: ["myTransactions"],
-    queryFn: fetchMyTransactions,
+  return useQuery<MyTransactionsResult>({
+    queryKey: ["myTransactions", page, limit],
+    queryFn: () => fetchMyTransactions(page, limit),
     enabled: !!user,
     staleTime: 1000 * 30, // 30 seconds — transactions can change
     refetchOnWindowFocus: false,

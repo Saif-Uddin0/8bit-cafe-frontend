@@ -127,7 +127,7 @@ function FoodsPageContent() {
               {isLoading ? "Loading…" : `${filteredFoods.length} items found`}
             </p>
           </div>
-          <p className="text-sm text-white/40">{categorySubtitle}</p>
+          <p className="text-sm text-white/70">{categorySubtitle}</p>
         </div>
 
         {/* Error state */}

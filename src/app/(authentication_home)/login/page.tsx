@@ -237,7 +237,7 @@ function LoginPageContent() {
           </div>
 
           {/* ── Social Buttons ── */}
-          <div className="flex justify-center gap-4">
+          {/* <div className="flex justify-center gap-4">
             <button
               type="button"
               className="flex items-center justify-center gap-2.5 px-8 py-3 sm:py-3.5 rounded-2xl bg-[#181426]/60 border border-white text-white text-xs sm:text-sm font-medium transition-all duration-200 hover:border-white/40 hover:bg-[#1c1636]/85 cursor-pointer"
@@ -260,7 +260,7 @@ function LoginPageContent() {
               </svg>
               Apple
             </button>
-          </div>
+          </div> */}
 
           {/* ── Sign Up Link ── */}
           <p className="text-center text-xs sm:text-sm lg:text-md text-white mt-6">

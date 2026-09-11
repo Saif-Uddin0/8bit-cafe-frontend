@@ -10,6 +10,8 @@ interface AuthContextType {
   profile: any;
   avatar: string;
   loading: boolean;
+  isError?: boolean;
+  error?: any;
   login: (data: any) => void;
   logout: () => void;
 }
@@ -18,62 +20,63 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [tokenRestored, setTokenRestored] = useState(false);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
-  // Load token from cookies on mount
   useEffect(() => {
     const savedToken = Cookies.get("accessToken");
     if (savedToken) {
       setToken(savedToken);
     }
+    setTokenRestored(true);
   }, []);
 
   // Fetch profile when token is available
-  // The correct endpoint is /api/user/getMe (returns 401 when unauth, 404 means route missing)
-  const { data: profile, isLoading, isError } = useQuery({
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       try {
         const res = await axiosSecure.get("/api/user/getMe");
         // Backend returns { data: { ...user }, success, message }
         return res.data?.data || res.data;
-      } catch (error: any) {
-        // 401 = expired/missing token, clear session
-        if (error.response?.status === 401 || error.response?.status === 403) {
+      } catch (err: any) {
+        // Only treat 401 as a genuine "session expired" — clear cookies & reset token
+        if (err.response?.status === 401) {
           Cookies.remove("accessToken");
           Cookies.remove("refreshToken");
+          setToken(null);
           return null;
         }
-        // 404 = route may not exist in this environment, swallow silently
-        if (error.response?.status === 404) {
-          return null;
-        }
-        throw error;
+        // Throw network/500/403 errors so query enters isError state without wiping cookies
+        throw err;
       }
     },
     enabled: !!token,
     staleTime: 1000 * 60 * 5, // 5 minutes cache
     refetchOnWindowFocus: false,
-    retry: 0, // Don't retry auth failures
+    retry: (failureCount, err: any) => {
+      // Don't retry auth failures (401/403)
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 
-  // Sync user state with fetched profile query
-  useEffect(() => {
-    if (profile) {
-      setUser(profile);
-    } else if (isError) {
-      // Clear credentials if token is invalid or expired
-      logout();
-    }
-  }, [profile, isError]);
+  // Derive user directly from profile to eliminate post-render useEffect race condition
+  const user = profile ?? null;
 
   // Construct avatar URL
   const avatar = profile?.profile_image
-    ? (profile.profile_image.startsWith("http")
+    ? profile.profile_image.startsWith("http")
       ? profile.profile_image
-      : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${profile.profile_image}`)
+      : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${profile.profile_image}`
     : "https://i.ibb.co/2kRZ0y9/user.png";
 
   // Login handler
@@ -89,29 +92,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         sameSite: "Lax",
       });
       setToken(accessToken);
-      // Invalidate profile and cart so they refetch immediately after login
-      queryClient.invalidateQueries({
-        queryKey: ["profile"],
-      });
 
-      queryClient.invalidateQueries({
-        queryKey: ["cart"],
-      });
+      // Seed query cache if user object is provided in login response
+      if (data?.user) {
+        queryClient.setQueryData(["profile"], data.user);
+      }
+
+      // Invalidate profile and cart so they refetch immediately after login
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     }
 
     if (refreshToken) {
-      // Cookies.set("refreshToken", refreshToken, { expires: 7 });
       Cookies.set("refreshToken", refreshToken, {
         expires: 7,
         secure: true,
         sameSite: "Lax",
       });
-    }
-
-    // If the login response embeds the user object, set it immediately
-    // so the UI can show name/avatar without waiting for the profile fetch
-    if (data?.user) {
-      setUser(data.user);
     }
   };
 
@@ -120,17 +117,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
     setToken(null);
-    setUser(null);
-    // Remove both profile and cart to prevent stale data from a previous user
+    queryClient.setQueryData(["profile"], null);
     queryClient.removeQueries({ queryKey: ["profile"] });
     queryClient.removeQueries({ queryKey: ["cart"] });
   };
+
+  // Auth is loading if cookie restoration is pending, or if token exists and /getMe is fetching initially
+  const loading = !tokenRestored || (!!token && isProfileLoading);
 
   const value = {
     user,
     profile,
     avatar,
-    loading: isLoading && !!token,
+    loading,
+    isError,
+    error,
     login,
     logout,
   };
@@ -145,3 +146,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

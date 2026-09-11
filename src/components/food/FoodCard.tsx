@@ -21,7 +21,7 @@ export default function FoodCard({ item }: FoodCardProps) {
 
   const imageUrl = item.images?.[0]?.url ?? PLACEHOLDER_IMAGE;
 
-  // ── Discount logic (exact backend field names) ──────────────────────────
+  //Discount logic (exact backend field names)
   const hasDiscount = item.isDisCount === true && item.discountPrice > 0;
   const displayPrice = hasDiscount ? item.discountPrice : item.price;
   const discountPct = item.disCountParcentage ?? 0;
@@ -46,10 +46,7 @@ export default function FoodCard({ item }: FoodCardProps) {
   return (
     <div className="group relative w-full h-full">
 
-      {/* ═══════════════════════════════════════════════════════
-          MOBILE — horizontal row card (image left | info right)
-          Hidden at sm and above
-          ═══════════════════════════════════════════════════════ */}
+      {/*  MOBILE — horizontal row card (image left | info right)  Hidden at sm and above */}
       <div
         onClick={() => router.push(`/foods/${item.id}`)}
         className="
@@ -162,9 +159,7 @@ export default function FoodCard({ item }: FoodCardProps) {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════
-          DESKTOP — original vertical portrait card (sm and above)
-          ═══════════════════════════════════════════════════════ */}
+      {/* DESKTOP — original vertical portrait card (sm and above) */}
       <div
         onClick={() => router.push(`/foods/${item.id}`)}
         className="

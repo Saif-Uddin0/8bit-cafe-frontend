@@ -8,24 +8,34 @@ import { useGameDetail } from "@/hooks/useGameDetail";
 // ─── Full-page skeleton ───────────────────────────────────────────────────────
 function GameDetailSkeleton() {
   return (
-    <div className="max-w-[1200px] mx-auto px-5 animate-pulse">
-      <div className="rounded-[28px] border border-white/10 bg-[#1A0A38] p-8 lg:p-10 grid lg:grid-cols-[320px_1fr] gap-12">
-        {/* Image placeholder */}
-        <div className="flex justify-center items-start">
-          <div className="w-[270px] h-[270px] rounded-full bg-white/10" />
-        </div>
-        {/* Info placeholder */}
-        <div className="space-y-4 pt-2">
-          <div className="h-8 w-64 rounded-full bg-white/10" />
-          <div className="h-5 w-32 rounded-full bg-white/10" />
-          <div className="space-y-2 mt-4">
-            <div className="h-4 w-40 rounded-full bg-white/10" />
-            <div className="h-4 w-48 rounded-full bg-white/10" />
+    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
+      <div className="rounded-[32px] border border-white/10 bg-[#1A0A38] p-6 sm:p-8 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* Gallery image stage placeholder */}
+          <div className="lg:col-span-6 flex flex-col gap-4">
+            <div className="aspect-[4/3] sm:aspect-[16/11] w-full rounded-2xl bg-white/10" />
+            <div className="flex gap-3">
+              <div className="w-20 h-20 rounded-xl bg-white/10" />
+              <div className="w-20 h-20 rounded-xl bg-white/10" />
+              <div className="w-20 h-20 rounded-xl bg-white/10" />
+            </div>
           </div>
-          <div className="h-20 w-full rounded-xl bg-white/10 mt-4" />
-          <div className="h-10 w-28 rounded-full bg-white/10 mt-4" />
-          <div className="flex gap-4 mt-6">
-            <div className="h-12 w-36 rounded-xl bg-white/10" />
+          {/* Info column placeholder */}
+          <div className="lg:col-span-6 space-y-5 pt-2">
+            <div className="flex gap-2">
+              <div className="h-6 w-24 rounded-full bg-white/10" />
+              <div className="h-6 w-36 rounded-full bg-white/10" />
+            </div>
+            <div className="h-10 w-4/5 rounded-2xl bg-white/10" />
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="h-24 rounded-2xl bg-white/10" />
+              <div className="h-24 rounded-2xl bg-white/10" />
+            </div>
+            <div className="space-y-2 pt-2">
+              <div className="h-4 w-full rounded-full bg-white/10" />
+              <div className="h-4 w-3/4 rounded-full bg-white/10" />
+            </div>
+            <div className="h-14 w-full rounded-2xl bg-white/10 pt-4" />
           </div>
         </div>
       </div>
